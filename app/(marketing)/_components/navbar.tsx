@@ -11,12 +11,11 @@ import { useConvexAuth } from "convex/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
-//import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const Links = [
-    { href:"/notice", text: '공지사항'},
-    { href:"/introduction", text: '회사소개'},
-    { href:"/support", text: '고객지원'},
+    { href: "/notice", text: '공지사항' },
+    { href: "/introduction", text: '회사소개' },
+    { href: "/support", text: '고객지원' },
 ]
 
 export const Navbar = () => {
@@ -47,39 +46,39 @@ export const Navbar = () => {
             justify-between w-full flex items-center gap-x-10">
                 {/* 햄버거 메뉴 아이콘(모바일에서만 보임) */}
                 <Button onClick={toggleMobileMenu} variant={"ghost"}
-                className="md:hidden ml-auto p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                    className="md:hidden ml-auto p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                     <Menu />
                 </Button>
                 {/* 데스크톱 nav */}
                 <nav className="hidden md:flex">
-                 <div>
-                    <ul className="flex space-x-4 gap-x-10">
-                        {
-                            Links.map((link) => (
-                                <li key={link.href} className="relative group">
-                                    <Link href={link.href} className="capitalize">
-                                    {link.text}
-                                    </Link>
-                                    <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black"></span>
-                                </li>
-                                
-                            ))
-                        }
-                        {isLoading && (
-                            <Spinner />
-                        )}
-                        {!isAuthenticated && !isLoading && (
-                            <>
-                                <li className="relative group">
-                                <SignInButton mode="modal">
-                                    로그인
-                                </SignInButton>
-                                <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black"></span>
-                                </li>
-                            </>
-                        )}
-                    </ul>
-                 </div>
+                    <div>
+                        <ul className="flex space-x-4 gap-x-10">
+                            {
+                                Links.map((link) => (
+                                    <li key={link.href} className="relative group">
+                                        <Link href={link.href} className="capitalize">
+                                            {link.text}
+                                        </Link>
+                                        <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black"></span>
+                                    </li>
+
+                                ))
+                            }
+                            {isLoading && (
+                                <Spinner />
+                            )}
+                            {!isAuthenticated && !isLoading && (
+                                <>
+                                    <li className="relative group">
+                                        <SignInButton mode="modal">
+                                            로그인
+                                        </SignInButton>
+                                        <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black"></span>
+                                    </li>
+                                </>
+                            )}
+                        </ul>
+                    </div>
                 </nav>
                 {/* 모바일 nav */}
                 {isMobileMenuOpen && (
@@ -123,8 +122,8 @@ export const Navbar = () => {
                 </div>
                 {<div className="hidden md:flex gap-x-2">
                     <ModeToggle />
-                    </div>
-                    }
+                </div>
+                }
             </div>
         </div>
     )
