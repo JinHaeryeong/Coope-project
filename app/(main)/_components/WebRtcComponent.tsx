@@ -8,7 +8,8 @@ import {
   MediaKind,
   RtpParameters,
   AppData,
-  Transport
+  Transport,
+  Producer
 } from "mediasoup-client/types";
 import { Device as MediaDevice } from "mediasoup-client";
 import "webrtc-adapter";
@@ -148,15 +149,17 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
       videoEl.srcObject = stream;
       videoEl.autoplay = true;
       videoEl.playsInline = true;
-      videoEl.addEventListener("loadedmetadata", () => console.log("✅ metadata loaded"));
-      videoEl.addEventListener("canplay", () => console.log("✅ can play"));
-      videoEl.addEventListener("play", () => console.log("▶️ playing"));
-      videoEl.addEventListener("error", (e) => console.error("❌ video error", e));
+      videoEl.addEventListener("loadedmetadata", () => console.log("메타데이터 로드"));
+      videoEl.addEventListener("canplay", () => console.log("재생 가능"));
+      videoEl.addEventListener("play", () => console.log("재생중"));
+      videoEl.addEventListener("error", (e) => console.error("비디오 에러", e));
       videoEl.setAttribute("data-producer-id", producerId);
       videoEl.setAttribute("data-type", appData.type);
       videoEl.className = "w-full h-full object-cover border border-white";
 
-      
+      // if (appData.type === "screen") {
+      //   setHasRemoteScreenShare(true);
+      // }
       setHasRemoteScreenShare(true);
       const container = remoteContainerRef.current;
       if (container) {
@@ -180,9 +183,21 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
 
       document.body.appendChild(audioEl);
 
-      console.log(`[Dom] 오디오 추가됨`)
+      console.log(`[Dom] 오디오 추가됨`);
 
     }
+    consumer.on("trackended", () => {
+      console.log("[Consumer] consumer track ended:", producerId);
+      const el = document.querySelector(`[data-producer-id="${producerId}"]`);
+      if (el) el.remove();
+      if (appData.type === "screen") {
+
+        setHasRemoteScreenShare(
+          !!remoteContainerRef.current?.querySelector('[data-type="screen"]')
+        );
+      }
+    });
+
   }, []);
 
   const setupSocket = useCallback(() => {
@@ -191,12 +206,15 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
 
     sock.on("connect", async () => {
       console.log("[Socket] 연결됨:", sock.id);
+
+      let recivedExistingProducers: ProducerInfo[] = [];
       const rtpCapabilities = await new Promise<RtpCapabilities>((res) => {
         sock.emit("joinRoom", roomId, res);
       });
       await createDevice(rtpCapabilities);
     });
 
+    // 이부분을 제거하기
     sock.on("existingProducers", (producers: ProducerInfo[]) => {
       console.log("[Socket] 기존 producers 수신:", producers);
       producers.forEach(handleNewProducer);
@@ -233,39 +251,39 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
   }, [setupSocket]);
 
   const createSendTransport = async () => {
-    // ✅ 이미 transport가 존재하면 재사용
+    // transport 재사용
     if (sendTransportRef.current) {
       console.log("[Transport] 기존 sendTransport 재사용");
       return sendTransportRef.current;
     }
-  
+
     console.log("[Transport] createSendTransport 요청");
-  
+
     const transportInfo = await new Promise<TransportOptions>((res) => {
       socketRef.current?.emit("create-transport", {}, res);
     });
-  
-    // ✅ device가 없으면 생성
+
+    // device가 없으면 생성
     const dev = device ?? (await createDevice(await getRtpCapabilities()));
     const transport = dev.createSendTransport(transportInfo);
-  
+
     transport.on("connect", ({ dtlsParameters }, callback) => {
       console.log("[Transport] 송신 연결 요청");
       socketRef.current?.emit("transport-connect", { dtlsParameters });
       callback();
     });
-  
+
     transport.on("produce", ({ kind, rtpParameters, appData }, callback) => {
       console.log("[Transport] produce 요청:", kind, appData);
       socketRef.current?.emit("transport-produce", { kind, rtpParameters, appData }, ({ id }: { id: string }) => {
         callback({ id });
       });
     });
-  
+
     sendTransportRef.current = transport;
     return transport;
   };
-  
+
 
 
   const startMedia = async (type: StreamType) => {
@@ -275,7 +293,10 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
 
     const stream =
       type === "camera"
-        ? await navigator.mediaDevices.getUserMedia({ video: true })
+        ? await navigator.mediaDevices.getUserMedia({
+          video:
+            { width: 320, height: 240, frameRate: { ideal: 10, max: 15 } },
+        })
         : await navigator.mediaDevices.getDisplayMedia({ video: true });
 
     const transport = await createSendTransport();
@@ -319,7 +340,7 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
     // 로컬 화면 연결
     if (localVideoRef.current) {
       const videoTrack = stream.getVideoTracks()[0];
-      if(videoTrack){
+      if (videoTrack) {
         const onlyVideoStream = new MediaStream([videoTrack]);
         localVideoRef.current.srcObject = onlyVideoStream;
       }
@@ -409,9 +430,9 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
   };
 
   const stopOppositeMedia = (type: StreamType) => {
-    if(type === "camera" && screenStream) {
+    if (type === "camera" && screenStream) {
       stopMedia("screen");
-    } else if(type === "screen" && cameraStream) {
+    } else if (type === "screen" && cameraStream) {
       stopMedia("camera");
     }
   }
@@ -549,7 +570,7 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
             // 5. "통화 녹음" 부모 문서 찾기 또는 생성
             const parentTitle = "통화 녹음";
             const existingParentDoc = getSidebar?.find(doc => doc.title === parentTitle);
-            
+
             let parentDocId;
             if (!existingParentDoc) {
               // 부모 문서가 없으면 생성

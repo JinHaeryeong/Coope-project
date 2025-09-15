@@ -139,7 +139,7 @@ const InquiryWrite = () => {
         fileInput.current.value = '';
       }
 
-      if(userRole !== 'admin') {
+      if (userRole !== 'admin') {
         router.push('/customerService')
       } else {
         router.push('/csAdmin');
