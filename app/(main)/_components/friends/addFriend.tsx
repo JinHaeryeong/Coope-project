@@ -3,7 +3,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Label } from "@/components/ui/label";
 import { PlusCircle, UserSearch } from "lucide-react";
 import { Input } from "@/components/ui/input"
-import UserList from "../userList";
+import UserList from "./userList";
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";

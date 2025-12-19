@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button"
 import { ConfirmModal } from "@/components/modals/confirm-modal"
 
 interface BannerProps {
-  documentId:Id<'documents'>
+  documentId: Id<'documents'>
 }
 
-export function Banner ({documentId}:BannerProps) {
+export function Banner({ documentId }: BannerProps) {
   const { workspaceId } = useParams() as { workspaceId?: string };
   const router = useRouter()
 
@@ -22,14 +22,14 @@ export function Banner ({documentId}:BannerProps) {
   if (!workspaceId) {
     console.log("waiting for hydration...");
     return null;
-    }
+  }
   const onRemove = () => {
-    const promise = remove({id:documentId})
+    const promise = remove({ id: documentId })
 
-    toast.promise(promise,{
-      loading:'Deleting note...',
-      success:'Note deleted!',
-      error:'Failed to delete note.'
+    toast.promise(promise, {
+      loading: '노트 삭제중...',
+      success: '노트가 삭제되었습니다!',
+      error: '노트 삭제에 실패했습니다.'
     })
 
     promise.then(() => {
@@ -38,28 +38,28 @@ export function Banner ({documentId}:BannerProps) {
   }
 
   const onRestore = () => {
-    const promise = restore({id:documentId})
+    const promise = restore({ id: documentId })
 
-    toast.promise(promise,{
-      loading:'Restoring note...',
-      success:'Note restored!',
-      error:'Failed to restore note.'
+    toast.promise(promise, {
+      loading: '노트 복원중...',
+      success: '노트가 복원되었습니다!',
+      error: '노트 복원에 실패했습니다.'
     })
   }
 
-return (
+  return (
     <div className="w-full bg-rose-500 text-center text-sm p-2 text-white flex gap-x-2 justify-center items-center">
-      <p>This page is in the Trash.</p>
+      <p>이 페이지는 휴지통에 있습니다.</p>
       <Button className="border-white bg-transparent hover:bg-primary/5 text-white hover:text-white p-1 px-2
       h-auto font-normal" variant='outline' size='sm' onClick={onRestore}>
-         Restore page
+        페이지 복원
       </Button>
-       <ConfirmModal onConfirm={onRemove} documentId={documentId} workspaceId={workspaceId}>
+      <ConfirmModal onConfirm={onRemove} documentId={documentId} workspaceId={workspaceId}>
         <Button className="border-white bg-transparent hover:bg-primary/5 text-white hover:text-white p-1 px-2
       h-auto font-normal" variant='outline' size='sm'>
-        Delete forever
-      </Button>
-       </ConfirmModal>
+          영구 삭제
+        </Button>
+      </ConfirmModal>
     </div>
-)
+  )
 }

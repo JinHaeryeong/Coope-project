@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff } from "lucide-react";
-import CallModal from "./call/callModal"; // 이걸 내부에 렌더링할 것
+import CallModal from "./callModal"; // 이걸 내부에 렌더링할 것
 
 interface CallSettings {
     mic: boolean;

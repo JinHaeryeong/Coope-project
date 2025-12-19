@@ -23,7 +23,7 @@ import { useInvite } from "@/hooks/use-invite";
 import { api } from "@/convex/_generated/api";
 import { Item } from "./item";
 import { toast } from "sonner";
-import { DocumentList } from "./document-list";
+import { DocumentList } from "./workspace/document-list";
 import { useMediaQuery } from "usehooks-ts";
 import {
   Popover,
@@ -36,7 +36,7 @@ import { Navbar } from "./navbar";
 import InviteModal from "@/components/modals/invite-modal";
 
 export const Navigation = () => {
-  // ✅ 모든 훅은 최상단에!
+  // 모든 훅은 최상단에!
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
