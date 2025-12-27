@@ -38,11 +38,17 @@ interface UseMediasoupReturn {
     toggleMic: () => Promise<void>;
 }
 
+
+
 export const useMediasoup = (
     roomId: string,
     onRemoteVideoStream?: (stream: MediaStream) => void
 ): UseMediasoupReturn => {
     // Refs & States
+    // Copilot 조언대로 컴포넌트 상단에 타이머 보관용 Ref 추가
+    const retryTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+    const retryCountsRef = useRef<Record<string, number>>({});
+
     const socketRef = useRef<ReturnType<typeof io> | null>(null);
     const deviceRef = useRef<MediaDevice | null>(null);
     const sendTransportRef = useRef<Transport | null>(null);
@@ -122,8 +128,31 @@ export const useMediasoup = (
 
     const handleNewProducer = useCallback(async (info: ProducerInfo) => {
         const socket = socketRef.current;
+        if (!deviceRef.current || !deviceRef.current.loaded) {
+            const currentRetry = retryCountsRef.current[info.producerId] || 0;
+            if (currentRetry > 10) {
+                console.error(`장치 로딩 실패: 프로듀서 ${info.producerId} 수신 불가`);
+                delete retryCountsRef.current[info.producerId];
+                return;
+            }
+            // 이미 예약된 타이머가 있으면 취소 (중복 실행 방지)
+            if (retryTimersRef.current[info.producerId]) {
+                clearTimeout(retryTimersRef.current[info.producerId]);
+            }
+            console.log("장치 로딩 대기 중... 재시도합니다.");
+            retryCountsRef.current[info.producerId] = currentRetry + 1;
+            retryTimersRef.current[info.producerId] = setTimeout(() => {
+                handleNewProducer(info);
+            }, 500);
+            return;
+        }
+        if (retryTimersRef.current[info.producerId]) {
+            clearTimeout(retryTimersRef.current[info.producerId]);
+            delete retryTimersRef.current[info.producerId];
+        }
         const device = deviceRef.current;
-        if (!device || !socket) return;
+
+        if (!socket) return;
 
         const transport = await createRecvTransport();
         const { id, producerId, kind, rtpParameters, appData } = await new Promise<any>((res) => {
@@ -192,7 +221,13 @@ export const useMediasoup = (
         if (type === "screen" && streams.camera) stopMedia("camera");
 
         const stream = type === "camera"
-            ? await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, frameRate: 15 } })
+            ? await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 640 }, // ideal을 사용하여 유연하게 대응
+                    height: { ideal: 480 },
+                    frameRate: { ideal: 30 }
+                }
+            })
             : await navigator.mediaDevices.getDisplayMedia({ video: true });
 
         const transport = await createSendTransport();
@@ -255,6 +290,9 @@ export const useMediasoup = (
             sock.disconnect();
             sendTransportRef.current?.close();
             recvTransportRef.current?.close();
+
+            // 모든 재시도 타이머 제거 (메모리 누수 방지)
+            Object.values(retryTimersRef.current).forEach(clearTimeout);
         };
     }, [roomId, handleNewProducer]);
 
