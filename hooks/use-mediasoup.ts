@@ -7,7 +7,6 @@ import {
     RtpCapabilities,
     TransportOptions,
     MediaKind,
-    RtpParameters,
     AppData,
     Transport,
 } from "mediasoup-client/types";
@@ -192,27 +191,26 @@ export const useMediasoup = (
 
     // Media Controls (Toggle Functions)
     const stopMedia = (type: StreamType) => {
-        const stream = type === "camera" ? streams.camera : streams.screen;
-        stream?.getTracks().forEach((t) => t.stop());
+        setStreams((prev) => {
+            const stream = prev[type];
+            stream?.getTracks().forEach((t) => t.stop());
+            return { ...prev, [type]: null };
+        });
 
-        const producer = myProducers[type];
-        if (producer) {
-            producer.close();
-            socketRef.current?.emit("close-producer", producer.id);
-            setMyProducers((prev) => ({ ...prev, [type]: undefined }));
-        }
+        setMyProducers((prev) => {
+            const producer = prev[type];
+            if (producer) {
+                console.log(`[Client] Producer 종료 요청: ${type}`);
+                socketRef.current?.emit("close-producer", producer.id);
+                producer.close();
+            }
+            return { ...prev, [type]: undefined };
+        });
 
-        if (type === "camera") {
-            setStreams(prev => ({ ...prev, camera: null }));
-            setCamEnabled(false);
-        } else {
-            setStreams(prev => ({ ...prev, screen: null }));
-        }
+        if (type === "camera") setCamEnabled(false);
 
-        if (Object.values(myProducers).filter(Boolean).length <= 1) {
-            sendTransportRef.current?.close();
-            sendTransportRef.current = null;
-        }
+        // Transport는 다른 미디어(마이크 등)가 없을 때만 닫거나, 
+        // 사실 굳이 닫지 않고 유지하는 것이 재연결 성능에 더 좋습니다.
     };
 
     const startMedia = async (type: StreamType) => {
@@ -243,7 +241,20 @@ export const useMediasoup = (
         }
 
         if (type === "screen") {
-            videoTrack.addEventListener("ended", () => stopMedia("screen"));
+            videoTrack.onended = () => {
+                console.log("화면 공유 트랙 종료됨 (브라우저 UI)");
+
+                // 서버에 알리기
+                socketRef.current?.emit("close-producer", producer.id);
+
+                // 미디어 클로즈
+                producer.close();
+                stream.getTracks().forEach(t => t.stop());
+
+                // 상태 정리
+                setMyProducers(prev => ({ ...prev, screen: undefined }));
+                setStreams(prev => ({ ...prev, screen: null }));
+            };
         }
     };
 
@@ -270,7 +281,8 @@ export const useMediasoup = (
 
     // Socket Lifecycle
     useEffect(() => {
-        const sock = io("http://localhost:4000");
+        const SERVER_URL = process.env.NEXT_PUBLIC_SIGNALING_SERVER_URL || "http://localhost:4000";
+        const sock = io(SERVER_URL);
         socketRef.current = sock;
 
         sock.on("connect", async () => {
@@ -282,8 +294,17 @@ export const useMediasoup = (
         sock.on("existingProducers", (producers: ProducerInfo[]) => producers.forEach(handleNewProducer));
         sock.on("new-producer", handleNewProducer);
         sock.on("producer-closed", (id) => {
+            console.log(`서버로부터 프로듀서 종료 알림 받음: ${id}`);
+
+            // 1. DOM 제거
             remoteContainerRef.current?.querySelector(`[data-producer-id="${id}"]`)?.remove();
             document.querySelector(`audio[data-producer-id="${id}"]`)?.remove();
+
+            // 2. 화면 공유 상태 업데이트
+            if (hasRemoteScreenShare) {
+                const remainingScreen = remoteContainerRef.current?.querySelector('[data-type="screen"]');
+                if (!remainingScreen) setHasRemoteScreenShare(false);
+            }
         });
 
         return () => {

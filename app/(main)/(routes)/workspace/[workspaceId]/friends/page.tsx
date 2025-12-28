@@ -12,64 +12,47 @@ import FriendRequestList from "../../../../_components/friends/friendRequestList
 
 const ListOfFriends = () => {
   const { user } = useUser();
-  const friendList = useQuery(api.friends.get, user?.id ? { id: user.id } : "skip"); // Convex에서 제공하는 skip 기능을 쓰거나 논리 처리
-  if (!user) {
-    return;
-  }
+  // 전체 리스트(수락 + 요청중)를 한 번만 가져옵니다.
+  const allFriendList = useQuery(api.friends.get, user?.id ? { id: user.id } : "skip");
 
+  if (!user) return null;
 
-  if (friendList === undefined) {
+  // 로딩 중일 때 스켈레톤
+  if (allFriendList === undefined) {
     return (
-      <div>
-        <div className="md:max-w-3xl lg:max-w-4xl mx-auto mt-10">
-          <div className="space-y-4 pl-8 pt-4">
-            <Skeleton className="h-14 w-[50%]" />
-            <Skeleton className="h-14 w-[80%]" />
-            <Skeleton className="h-14 w-[40%]" />
-            <Skeleton className="h-14 w-[60%]" />
-          </div>
-        </div>
+      <div className="md:max-w-3xl lg:max-w-4xl mx-auto mt-10 space-y-4 pl-8 pt-4">
+        <Skeleton className="h-14 w-[50%]" />
+        <Skeleton className="h-14 w-[80%]" />
       </div>
-    )
+    );
   }
 
-  // 요청한 친구도 없고, 수락된 친구도 없을 경우
-  if (friendList?.length === 0) {
+  // 실제 대화 가능한 '수락됨' 친구만 필터링
+  const acceptedFriends = allFriendList.filter(f => f.status === "수락됨");
+
+  // 수락된 친구가 한 명도 없다면 로봇 화면을 보여줍니다.
+  // (요청 중인 친구만 있어도 대화는 못 하니까요!)
+  if (acceptedFriends.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-4">
-        <Image
-          src="/robot.png"
-          height={300}
-          width={300}
-          alt="empty"
-          className="dark:hidden"
-          priority
-        />
-        <Image
-          src="/robot_dark.png"
-          height={300}
-          width={300}
-          alt="empty"
-          className="hidden dark:block"
-          priority
-        />
-        <h2 className="text-lg font-medium">
-          메세지를 나눌 친구가 없어요. 새로운 친구를 추가해볼까요?
-        </h2>
-        <div className="flex">
+        <Image src="/robot.png" height={300} width={300} alt="empty" priority />
+        <h2 className="text-lg font-medium">대화할 친구가 없어요. 새로운 친구를 추가해볼까요?</h2>
+
+        <div className="flex gap-2">
+          <Image src="/robot.png" height={300} width={300} alt="empty" priority />
           <AddFriend />
-          <div className="ml-2"><FriendRequestList /></div>
+          <FriendRequestList />
         </div>
       </div>
     );
   }
 
+  // 4. 수락된 친구가 있다면 데이터를 넘겨주며 FriendPage를 엽니다.
   return (
     <div className="h-full">
-      <FriendPage />
+      <FriendPage initialFriends={acceptedFriends} />
     </div>
-  )
-
-}
+  );
+};
 
 export default ListOfFriends;

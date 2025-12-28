@@ -4,12 +4,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery } from "convex/react";
-import { GenericId } from "convex/values";
 
 const FriendRequestList = () => {
     const { user } = useUser();
     const acceptFriendRequest = useMutation(api.friends.acceptFriendRequest);
-    
+
     if (!user) {
         return;
     }
@@ -59,11 +58,11 @@ const FriendRequestList = () => {
                                                 </Avatar>
                                                 <span className="font-medium">{friendRequest.userName}</span>
                                                 <span className="font-medium">{friendRequest.userEmail}</span>
-                                                
+
                                                 {/* 친구 요청 수락 버튼 */}
-                                                <Button 
-                                                    type="button" 
-                                                    onClick={() => handleAccept(friendRequest)} 
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => handleAccept(friendRequest)}
                                                     className="add-button px-3"
                                                 >
                                                     수락

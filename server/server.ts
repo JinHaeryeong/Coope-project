@@ -11,10 +11,10 @@ import { registerSocketHandlers } from "./src/socket";
 import apiRouter from "./src/routes/apiRouter";
 
 const app = express();
-const PORT = 4000;
-
+const PORT = process.env.PORT || 4000;
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 // 미들웨어 설정
-app.use(cors());
+app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json({ limit: '10mb' }));
 
 // API 라우터 연결
@@ -25,7 +25,7 @@ const server = http.createServer(app);
 // 소켓 서버 설정
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: CLIENT_URL,
         methods: ["GET", "POST"],
     },
 });

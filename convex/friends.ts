@@ -2,6 +2,8 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 // 친구 리스트 출력
+// friends.ts 수정 예시
+
 export const get = query({
     args: { id: v.string() },
     handler: async (ctx, args) => {
@@ -10,13 +12,13 @@ export const get = query({
             .withIndex("byUserId", (q) => q.eq("userId", args.id))
             .collect();
 
-        // friends 테이블의 friendId를 이용해 users 테이블에서 정보 가져오기
         const friendsWithInfo = await Promise.all(
             friendsList.map(async (friend) => {
+                // filter 대신 withIndex 사용으로 성능과 정확도 확보
                 const friendInfo = await ctx.db
                     .query("users")
-                    .filter((q) => q.eq("externalId", friend.friendId))
-                    .first();
+                    .withIndex("byExternalId", (q) => q.eq("externalId", friend.friendId))
+                    .unique();
 
                 return {
                     ...friend,
@@ -32,38 +34,7 @@ export const get = query({
 });
 
 
-// 수락된 친구 목록
-export const getFriendsList = query({
-    args: {
-        id: v.string()
-    },
-    handler: async (ctx, args) => {
-        // 친구 목록을 friends 테이블에서 가져오기
-        const friends = await ctx.db
-            .query("friends")
-            .withIndex("byUserId", (q) => q.eq("userId", args.id))
-            .filter((q) => q.eq(q.field("status"), "수락됨"))
-            .collect();
 
-        // 친구 목록에 대해 각 friendId에 대한 추가 정보를 users 테이블에서 가져오기
-        const friendsWithUserInfo = await Promise.all(friends.map(async (friend) => {
-            // friendId에 해당하는 유저 정보 가져오기
-            const user = await ctx.db
-                .query("users")
-                .withIndex("byExternalId", (q) => q.eq("externalId", friend.friendId))
-                .unique();
-            
-            return {
-                ...friend,
-                friendName: user?.name,         // friendName 추가
-                friendEmail: user?.email,       // friendEmail 추가
-                friendIcon: user?.userIcon,     // friendIcon 추가
-            };
-        }));
-
-        return friendsWithUserInfo;
-    }
-});
 
 
 
@@ -74,10 +45,10 @@ export const getFriendRequest = query({
     },
     handler: async (ctx, args) => {
         return await ctx.db
-        .query("friends")
-        .withIndex("byUserId", (q) => q.eq("userId", args.id))
-        .filter((q) => q.eq(q.field("status"), "요청중"))
-        .collect();
+            .query("friends")
+            .withIndex("byUserId", (q) => q.eq("userId", args.id))
+            .filter((q) => q.eq(q.field("status"), "요청중"))
+            .collect();
     }
 })
 //나에게 온 친구 요청 목록
@@ -100,7 +71,7 @@ export const getRequest = query({
                 .query("users")
                 .withIndex("byExternalId", (q) => q.eq("externalId", friendRequest.userId))
                 .unique();
-            
+
             return {
                 ...friendRequest,
                 userName: user?.name,         // userName 추가
@@ -128,13 +99,13 @@ export const sendFriendRequest = mutation({
                 q.eq("userId", args.userId).eq("friendId", args.friendId)
             )
             .unique();
-        
+
 
         if (existingRequest?.status === "요청중") {
             return { success: false, message: "이미 친구 요청이 있습니다." };
         }
         if (existingRequest?.status === "수락됨") {
-            return { success: false, message: "이미 친구입니다."};
+            return { success: false, message: "이미 친구입니다." };
         }
 
 
