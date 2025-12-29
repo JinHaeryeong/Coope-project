@@ -14,8 +14,8 @@ export const Footer = () => {
     const openPrivacyModal = () => setIsPrivacyModalOpen(true);
     const closePrivacyModal = () => setIsPrivacyModalOpen(false);
 
-    return(
-        <div className="flex items-center w-full p-3 fixed bottom-0 bg-background z-50 dark:bg-[#1F1F1F] rounded-t-2xl">
+    return (
+        <div className="flex items-center w-full p-3 bottom-0 fixed bg-background z-50 dark:bg-[#1F1F1F] rounded-t-2xl">
             <div className="md:ml-auto w-full justify-between
             md:justify-end flex items-center gap-x-2
             text-muted-foreground">
@@ -25,7 +25,7 @@ export const Footer = () => {
                 <Modal isOpen={isPrivacyModalOpen} onClose={closePrivacyModal} title="개인정보 정책">
                     <Policy />
                 </Modal>
-                <Button variant="ghost" size="sm"  onClick={openTermsModal}>
+                <Button variant="ghost" size="sm" onClick={openTermsModal}>
                     이용약관
                 </Button>
                 <Modal isOpen={isTermsModalOpen} onClose={closeTermsModal} title="이용약관">

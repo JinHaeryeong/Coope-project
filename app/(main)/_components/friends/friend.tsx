@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
@@ -6,12 +5,10 @@ import { useMutation, useQuery } from "convex/react";
 import AddFriend from "./addFriend";
 import FriendRequestList from "./friendRequestList";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { useEffect, useRef, useState } from "react";
 import { FunctionReturnType } from "convex/server";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { GenericId } from "convex/values";
 import { Phone, Plus, X } from "lucide-react";
 import CallModal from "../call/callModal";
@@ -210,8 +207,14 @@ const FriendPage = ({ initialFriends }: FriendPageProps) => {
                                 </div>
                             </>
                         ) : (
-                            <div className="flex h-full items-center justify-center">
-                                <h2 className="text-muted-foreground">친구를 선택하여 대화를 시작해보세요</h2>
+                            <div className="flex flex-col h-full items-center justify-center">
+                                <Image
+                                    src="/chat.png"
+                                    height={500}
+                                    width={500}
+                                    alt="채팅"
+                                />
+                                <div className="text-muted-foreground">친구를 선택하여 대화를 시작해보세요</div>
                             </div>
                         )}
                     </div>
