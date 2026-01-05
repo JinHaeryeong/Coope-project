@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, ComponentProps } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,11 @@ import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
 export const AIChatModal = ({
   isOpen,
   onClose,
@@ -73,26 +78,30 @@ export const AIChatModal = ({
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value, { stream: true });
         accumulated += chunk;
         responseBufferRef.current = accumulated;
-        
+
         // 50ms마다 상태 업데이트
         if (!responseBufferRef.current) {
           setCurrentResponse(accumulated);
         }
       }
-      
+
       // 최종 응답 업데이트
       setCurrentResponse(accumulated);
       addMessage({ role: "assistant", content: accumulated });
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log('Response aborted by user');
-        return;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.log('사용자에 의해 요청이 중단되었습니다.');
+          return;
+        }
+        console.error("스트림 처리 중 오류 발생:", error.message);
+      } else {
+        console.error("알 수 없는 오류 발생:", error);
       }
-      console.error("Stream processing error:", error);
       throw error;
     }
   }, [addMessage]);
@@ -118,7 +127,7 @@ export const AIChatModal = ({
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           message: userMessage,
           previousMessages: recentMessages
         }),
@@ -129,12 +138,14 @@ export const AIChatModal = ({
       if (!response.body) throw new Error("No response body");
 
       await processStream(response.body.getReader());
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log('Request aborted by user');
-        return;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.log('사용자에 의해 요청이 취소되었습니다.');
+          return;
+        }
+        console.error("오류 발생:", error.message);
       }
-      console.error("Error:", error);
       addMessage({
         role: "assistant",
         content: "죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.",
@@ -164,11 +175,11 @@ export const AIChatModal = ({
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        code({ className, children, ...props }: any) {
+        code({ className, children }: ComponentProps<"code">) {
           const match = /language-(\w+)/.exec(className || "");
-          return match ? (
+          const isInline = !match;
+          return !isInline ? (
             <SyntaxHighlighter
-              {...props}
               style={vscDarkPlus}
               language={match[1]}
               PreTag="div"
@@ -176,7 +187,7 @@ export const AIChatModal = ({
               {String(children).replace(/\n$/, "")}
             </SyntaxHighlighter>
           ) : (
-            <code className={className} {...props}>
+            <code className={className}>
               {children}
             </code>
           );
@@ -209,19 +220,17 @@ export const AIChatModal = ({
   // 메시지 목록 메모이제이션
   const messageList = useMemo(() => (
     <div className="space-y-4 pb-4">
-      {messages.map((msg, idx) => (
+      {messages.map((msg: ChatMessage, idx: number) => (
         <div
           key={idx}
-          className={`flex ${
-            msg.role === "user" ? "justify-end" : "justify-start"
-          }`}
+          className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"
+            }`}
         >
           <div
-            className={`max-w-[80%] rounded-lg p-3 ${
-              msg.role === "user"
-                ? "bg-blue-50 text-gray-900"
-                : "bg-gray-50 text-gray-900"
-            }`}
+            className={`max-w-[80%] rounded-lg p-3 ${msg.role === "user"
+              ? "bg-blue-50 text-gray-900"
+              : "bg-gray-50 text-gray-900"
+              }`}
           >
             {renderMessage(msg.content)}
           </div>
@@ -272,9 +281,9 @@ export const AIChatModal = ({
             className="flex-1"
           />
           {isLoading ? (
-            <Button 
-              type="button" 
-              onClick={handleStopResponse} 
+            <Button
+              type="button"
+              onClick={handleStopResponse}
               className="bg-black hover:bg-gray-800"
             >
               <Square className="h-4 w-4" />

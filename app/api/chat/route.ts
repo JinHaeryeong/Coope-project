@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { message, previousMessages } = await req.json();
 
     // 이전 메시지 형식 변환
-    const formattedMessages = previousMessages.map((msg: any) => ({
+    const formattedMessages = previousMessages.map((msg: { role: string; content: string }) => ({
       role: msg.role,
       content: msg.content
     }));

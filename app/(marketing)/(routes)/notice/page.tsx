@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
@@ -22,7 +21,6 @@ import {
     PaginationLink,
     PaginationPrevious,
     PaginationNext,
-    PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { useUser } from "@clerk/clerk-react";
 

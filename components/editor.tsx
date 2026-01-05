@@ -5,7 +5,6 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useTheme } from "next-themes";
 import { useEdgeStore } from "@/lib/edgestore";
-import { useState } from 'react';
 import "@blocknote/core/style.css";
 import "@blocknote/mantine/style.css";
 
@@ -17,7 +16,7 @@ interface EditorProps {
 
 const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
   const { resolvedTheme } = useTheme();
-  const [collapsedHeadings, setCollapsedHeadings] = useState<Set<string>>(new Set());
+  // const [collapsedHeadings, setCollapsedHeadings] = useState<Set<string>>(new Set());
   const { edgestore } = useEdgeStore();
 
   const handleUpload = async (file: File) => {
@@ -28,13 +27,13 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
     return res.url;
   };
 
-  const toggleHeading = (id: string) => {
-    setCollapsedHeadings((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-      return newSet;
-    });
-  };
+  // const toggleHeading = (id: string) => {
+  //   setCollapsedHeadings((prev) => {
+  //     const newSet = new Set(prev);
+  //     newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+  //     return newSet;
+  //   });
+  // };
 
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent

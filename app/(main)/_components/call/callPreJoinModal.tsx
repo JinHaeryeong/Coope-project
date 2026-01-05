@@ -1,7 +1,9 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff } from "lucide-react";
-import CallModal from "./callModal"; // 이걸 내부에 렌더링할 것
+import CallModal from "./callModal";
 
 interface CallSettings {
     mic: boolean;
@@ -19,13 +21,16 @@ const CallPreJoinModal: React.FC<CallPreJoinModalProps> = ({ isOpen, onClose, ro
     const videoRef = useRef<HTMLVideoElement>(null);
     const [camEnabled, setCamEnabled] = useState(false);
     const [micEnabled, setMicEnabled] = useState(false);
-    const [screenEnabled] = useState(false); // screen은 추후 버튼 추가 가능
+    const [screenEnabled] = useState(false);
     const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
-    const [joined, setJoined] = useState(false); // 참여 버튼 누른 상태
+    const [joined, setJoined] = useState(false);
     const [callSettings, setCallSettings] = useState<CallSettings | null>(null);
 
+    // 모달 닫기 및 리소스 정리
     const handleClose = () => {
-        previewStream?.getTracks().forEach((track) => track.stop());
+        if (previewStream) {
+            previewStream.getTracks().forEach((track) => track.stop());
+        }
         setPreviewStream(null);
         setJoined(false);
         setCallSettings(null);
@@ -33,39 +38,60 @@ const CallPreJoinModal: React.FC<CallPreJoinModalProps> = ({ isOpen, onClose, ro
     };
 
     useEffect(() => {
-        if (!isOpen || (!camEnabled && !micEnabled)) return; // 아무것도 켜지 않은 상태면 skip
+        // 모달이 닫혀있거나 장치가 모두 꺼져있으면 스트림 정리 후 종료
+        if (!isOpen || (!camEnabled && !micEnabled)) {
+            if (previewStream) {
+                previewStream.getTracks().forEach((track) => track.stop());
+                setPreviewStream(null);
+            }
+            return;
+        }
 
         const getPreview = async () => {
             try {
+                // 새로운 스트림을 받기 전에 기존 스트림이 있다면 미리 정지
+                if (previewStream) {
+                    previewStream.getTracks().forEach((track) => track.stop());
+                }
+
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: camEnabled,
-                    audio: micEnabled
+                    audio: micEnabled,
                 });
+
                 setPreviewStream(stream);
+
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                 }
-            } catch (err) {
-                console.error("장치 점유 중이거나 접근 실패", err);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    if (err.name === "NotAllowedError") {
+                        console.error("카메라/마이크 권한이 거부되었습니다.");
+                        alert("카메라 및 마이크 접근 권한을 허용해주세요.");
+                    } else if (err.name === "NotFoundError") {
+                        console.error("연결된 장치를 찾을 수 없습니다.");
+                    } else {
+                        console.error("장치 연결 중 오류 발생:", err.message);
+                    }
+                }
             }
         };
 
         getPreview();
+
+        // 정리(Cleanup) 함수: 컴포넌트 언마운트 시 트랙 정지
         return () => {
             previewStream?.getTracks().forEach((track) => track.stop());
         };
-    }, [isOpen, camEnabled, micEnabled]);
-
+        // 의존성 배열에 필요한 모든 값 포함 (Warning 해결)
+    }, [isOpen, camEnabled, micEnabled, previewStream]);
 
     const toggleCam = () => {
-        if (!previewStream) return;
-        previewStream.getVideoTracks().forEach((track) => (track.enabled = !camEnabled));
         setCamEnabled((prev) => !prev);
     };
 
     const toggleMic = () => {
-        if (!previewStream) return;
-        previewStream.getAudioTracks().forEach((track) => (track.enabled = !micEnabled));
         setMicEnabled((prev) => !prev);
     };
 
@@ -76,41 +102,57 @@ const CallPreJoinModal: React.FC<CallPreJoinModalProps> = ({ isOpen, onClose, ro
 
     if (!isOpen) return null;
 
-    // 참여 후에는 CallModal을 보여줌
     if (joined && callSettings && previewStream) {
         return (
             <CallModal
                 isOpen={true}
                 onClose={handleClose}
                 roomId={roomId}
-            //settings={callSettings}
-            //stream={previewStream}
+            // settings={callSettings}
+            // stream={previewStream}
             />
         );
     }
 
-    // 초기 프리뷰 화면
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="rounded-lg p-6 w-5/12 h-auto border bg-white dark:bg-neutral-900 space-y-4">
-                <h2 className="text-xl font-bold">통화 참여 전에 확인하세요</h2>
+            <div className="rounded-lg p-6 w-11/12 max-w-2xl h-auto border bg-white dark:bg-neutral-900 space-y-4">
+                <h2 className="text-xl font-bold">통화 참여 전 확인</h2>
                 <div className="aspect-video bg-black rounded overflow-hidden relative">
-                    <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover"
+                    />
                     {!camEnabled && (
                         <div className="absolute inset-0 flex items-center justify-center text-white bg-black bg-opacity-60">
-                            카메라 꺼짐
+                            카메라가 꺼져 있습니다
                         </div>
                     )}
                 </div>
                 <div className="flex justify-center gap-4">
-                    <Button onClick={toggleCam}>{camEnabled ? <Video /> : <VideoOff />}</Button>
-                    <Button onClick={toggleMic}>{micEnabled ? <Mic /> : <MicOff />}</Button>
-                </div>
-                <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={handleClose}>
-                        닫기
+                    <Button
+                        variant={camEnabled ? "default" : "destructive"}
+                        onClick={toggleCam}
+                    >
+                        {camEnabled ? <Video /> : <VideoOff />}
                     </Button>
-                    <Button onClick={handleJoin}>참여하기</Button>
+                    <Button
+                        variant={micEnabled ? "default" : "destructive"}
+                        onClick={toggleMic}
+                    >
+                        {micEnabled ? <Mic /> : <MicOff />}
+                    </Button>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="outline" onClick={handleClose}>
+                        취소
+                    </Button>
+                    <Button onClick={handleJoin} disabled={!previewStream && (camEnabled || micEnabled)}>
+                        참여하기
+                    </Button>
                 </div>
             </div>
         </div>

@@ -8,7 +8,7 @@ const openai = new OpenAI({
 export async function POST(req: NextRequest) {
   try {
     const { text } = await req.json();
-    
+
     if (!text) {
       return NextResponse.json({ error: "요약할 텍스트가 없습니다." }, { status: 400 });
     }
@@ -37,17 +37,23 @@ export async function POST(req: NextRequest) {
     });
 
     const summary = completion.choices[0]?.message?.content || "";
-    
+
     if (!summary) {
       return NextResponse.json({ error: "텍스트 정리 실패" }, { status: 500 });
     }
 
     return NextResponse.json({ summary });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("텍스트 정리 중 오류:", error);
+
+    let errorMessage = "텍스트 변환에 실패했습니다.";
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
     return NextResponse.json(
-      { error: error.message || "텍스트 정리 실패" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
-} 
+}

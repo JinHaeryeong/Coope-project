@@ -5,7 +5,6 @@ import { useQuery } from "convex/react"
 import { useParams, useRouter } from "next/navigation"
 import { useUser } from "@clerk/clerk-react"
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,

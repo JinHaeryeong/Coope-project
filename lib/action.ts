@@ -13,9 +13,9 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export const sendEmail = async (email: any, content: string) => {
-   
-    let mailOptions = {
+export const sendEmail = async (email: string, content: string) => {
+
+    const mailOptions = {
         from: process.env.GMAIL_USER,
         to: email,
         subject: '[Coope] 문의 주신 내용에 대한 답변드립니다',
@@ -32,16 +32,19 @@ export const sendEmail = async (email: any, content: string) => {
     };
 
     try {
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.error(error);
-            } else {
-                console.info("Email sent: " + info.response);
-            }
-        });
+        // 콜백 대신 Promise 방식으로 하기
 
-        return { message: "이메일 전송 성공" };
-    } catch (error) {
-        console.error(error);
+        const info = await transporter.sendMail(mailOptions);
+        console.info("Email sent: " + info.response);
+
+        return { success: true, message: "이메일 전송 성공" };
+    } catch (error: unknown) {
+        // error가 unknown일 때 처리 (빌드 에러 해결)
+        if (error instanceof Error) {
+            console.error("이메일 전송 중 오류:", error.message);
+        } else {
+            console.error("알 수 없는 오류 발생", error);
+        }
+        return { success: false, message: "이메일 전송 실패" };
     }
 };

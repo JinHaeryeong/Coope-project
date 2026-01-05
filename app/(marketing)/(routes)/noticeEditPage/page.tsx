@@ -1,7 +1,7 @@
 "use client"
 
 import React, { Suspense, useEffect, useRef, useState } from "react";
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery } from "convex/react";
 import { useUser } from "@clerk/clerk-react";
@@ -22,17 +22,18 @@ const NoticeEditContent = () => {
     const updateNotice = useMutation(api.notices.updateNotice);
 
     const notice = useQuery(api.notices.getById, noticeId ? { id: noticeId } : "skip");
-    if (!noticeId) { //null 체크, 없어도 사이트 자체는 돌아가지만 IDE에서는 계속 오류라고 표시됨
-        return <p>공지사항 ID가 유효하지 않습니다.</p>
-    }
-
-
     useEffect(() => {
         if (notice) {
             setTitle(notice.title);
             setContent(notice.content);
         }
     }, [notice]); //무한 렌더링 방지를 위해 필요. if를 통해 notice가 존재할 때만 렌더링 되도록 해줘야 null, undefined일 때의 무한 렌더링이 방지됨
+
+    if (!noticeId) { //null 체크, 없어도 사이트 자체는 돌아가지만 IDE에서는 계속 오류라고 표시됨
+        return <p>공지사항 ID가 유효하지 않습니다.</p>
+    }
+
+
 
     if (notice === undefined) {
         return <p>로딩 중...</p>;
@@ -100,8 +101,11 @@ const NoticeEditContent = () => {
                 fileInput.current.value = '';
             }
             router.push('/notice');
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('공지사항 작성 중 오류 발생:', error);
+            if (error instanceof Error) {
+                console.log("에러 내용:", error.message);
+            }
             alert("공지사항 수정에 실패했습니다.");
         }
     }
@@ -115,20 +119,31 @@ const NoticeEditContent = () => {
         router.back();
     };
 
-    const handleContnetChange = (e: any) => {
+    const handleContnetChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setContent(e.target.value);
     }
-    const handleEmojiClick = (emojiObject: { emoji: string; }) => {
+    // emojiObject: { emoji: string; }
+    // const handleEmojiClick = (emojiObject: { emoji: string; }) => {
+    //     setContent(prevContent => {
+    //         const maxLength = 500;
+    //         const emojiLength = 2;
+    //         if (prevContent.length <= maxLength || (prevContent.length >= maxLength && prevContent.length + emojiObject.emoji.length <= maxLength + emojiLength)) {
+    //             return prevContent + emojiObject.emoji;
+    //         }
+    //         else {
+    //             return prevContent;
+    //         }
+    //     }); //수정해야함
+    // }
+
+    const handleEmojiClick = (emojiData: EmojiClickData) => {
         setContent(prevContent => {
             const maxLength = 500;
-            const emojiLength = 2;
-            if (prevContent.length <= maxLength || (prevContent.length >= maxLength && prevContent.length + emojiObject.emoji.length <= maxLength + emojiLength)) {
-                return prevContent + emojiObject.emoji;
+            if (prevContent.length + emojiData.emoji.length <= maxLength) {
+                return prevContent + emojiData.emoji;
             }
-            else {
-                return prevContent;
-            }
-        }); //수정해야함
+            return prevContent;
+        });
     }
 
 

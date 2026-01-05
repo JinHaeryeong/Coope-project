@@ -1,10 +1,8 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-import { editComment } from "@/convex/comments";
 import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery } from "convex/react";
-import { comment } from "postcss";
 import { FC } from "react";
 import Image from "next/image";
 import { GenericId } from "convex/values";
@@ -14,18 +12,21 @@ interface AnswersProp {
 
 const AnswerList: FC<AnswersProp> = ({ postId }) => {
     const answers = useQuery(api.inquiries.listAnswer, { id: postId });
-    const files = useQuery(api.inquiries.ListAnswerFiles, {inquiryId: postId});
+    const files = useQuery(api.inquiries.ListAnswerFiles, { inquiryId: postId });
     const deleteAnswer = useMutation(api.inquiries.deleteAnswer);
     const { user } = useUser();
 
-    const handleDelete = async (id: GenericId<"inquiryAnswer">, e: any) => {
+    const handleDelete = async (id: GenericId<"inquiryAnswer">, e: React.MouseEvent) => {
         e.preventDefault();
         try {
             await deleteAnswer({
                 answerId: id
             });
-        } catch (error) {
-            console.log("에러..임");
+        } catch (error: unknown) {
+            console.log("답변 삭제 중 에러 발생");
+            if (error instanceof Error) {
+                console.log("상태 메세지: " + error.message);
+            }
         }
     }
     return (

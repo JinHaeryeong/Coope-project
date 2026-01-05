@@ -34,9 +34,9 @@ yarn-error.log*
 .env*
 
 # auth files
-auth.*
-auth.config
-/convex/auth.config.js
+# auth.*
+# auth.config
+# /convex/auth.config.js
 # vercel
 .vercel
 

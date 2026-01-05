@@ -2,7 +2,7 @@ import { AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { Avatar } from "@/components/ui/avatar";
-import { useConvex, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { UserRoundPlus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,26 +33,26 @@ const UserList = ({ userId }: { userId: string }) => {
   const handleAddFriend = async () => {
     console.log("친구 추가 시도:", user.id, userList.externalId);
     try {
-    const response = await sendFriendRequest({
-      userId: user.id,
-      friendId: userList.externalId,
-    });
-      console.log("친구 추가 응답:", response);
-    if (!response.success && response.message) {
-      // 에러 메시지를 설정하고 표시
-      setErrorMessage(response.message);
-      setShowError(true);
-    } else {
-      // 성공 시 에러를 숨기기
-      setShowError(false);
-      //toast를 통해 친구 요청을 보낼 시 이용자가 요청을 보낸 것을 UI적으로 알 수 있도록 하기 위함
-      toast("친구 요청을 보냈습니다.", {
-        description: "친구가 요청을 수락 시 함께 대화를 나눌 수 있습니다 :)",
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
+      const response = await sendFriendRequest({
+        userId: user.id,
+        friendId: userList.externalId,
       });
+      console.log("친구 추가 응답:", response);
+      if (!response.success && response.message) {
+        // 에러 메시지를 설정하고 표시
+        setErrorMessage(response.message);
+        setShowError(true);
+      } else {
+        // 성공 시 에러를 숨기기
+        setShowError(false);
+        //toast를 통해 친구 요청을 보낼 시 이용자가 요청을 보낸 것을 UI적으로 알 수 있도록 하기 위함
+        toast("친구 요청을 보냈습니다.", {
+          description: "친구가 요청을 수락 시 함께 대화를 나눌 수 있습니다 :)",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        });
       }
     } catch (err) {
       console.error("친구 추가 에러:", err);

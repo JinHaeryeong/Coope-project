@@ -8,13 +8,13 @@ import { useMutation, useQuery } from "convex/react";
 const FriendRequestList = () => {
     const { user } = useUser();
     const acceptFriendRequest = useMutation(api.friends.acceptFriendRequest);
+    const friendsRequest = useQuery(api.friends.getRequest, user ? { id: user?.id } : "skip");
 
     if (!user) {
         return;
     }
 
     // 친구 요청 목록 가져오기
-    const friendsRequest = useQuery(api.friends.getRequest, { id: user?.id });
 
     const handleAccept = async (friendRequestList: { userId: string; friendId: string; }) => {
         try {

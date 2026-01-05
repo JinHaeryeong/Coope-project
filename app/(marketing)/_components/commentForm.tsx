@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { SetStateAction, useState } from "react";
 
-export const CommentForm = ({notice}: {notice: string}) => {
+export const CommentForm = ({ notice }: { notice: string }) => {
     const [content, setContent] = useState(''); //처음에 comment로 했을 때 오류가 나서 얘가 문제 일줄 알고 이름 content로 바꿈 -> 근데 얘 이름은 문제가 아니었다
     const { user } = useUser();
     const addComment = useMutation(api.comments.addComment);
@@ -18,13 +17,13 @@ export const CommentForm = ({notice}: {notice: string}) => {
             alert('로그인이 필요합니다.');
             return;
         }
-        if(!user.username){
+        if (!user.username) {
             alert('유저가 존재하지않습니다');
             return;
         }
-        if(!notice) {
+        if (!notice) {
             alert('공지사항이 존재하지않습니다.')
-            return ;
+            return;
         }
         try {
 
@@ -32,12 +31,15 @@ export const CommentForm = ({notice}: {notice: string}) => {
                 content,
                 author: user?.username,
                 authorId: user?.id,
-                postId: notice, 
+                postId: notice,
                 authorImgUrl: user?.imageUrl
             });
             setContent('');
-        } catch (error) {
+        } catch (error: unknown) {
             console.log('댓글 작성중 오류발생')
+            if (error instanceof Error) {
+                console.log("상태 메세지: " + error.message);
+            }
         }
     }
     return (

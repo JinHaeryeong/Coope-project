@@ -52,7 +52,7 @@ const InquiryWrite = () => {
     const maxFileSizeMB = 20;
 
 
-    let validFiles = [];
+    const validFiles: File[] = [];
     let totalFiles = selectedFiles.length;
 
     for (const file of files) {
@@ -144,8 +144,11 @@ const InquiryWrite = () => {
       } else {
         router.push('/csAdmin');
       }
-    } catch (error) {
+    } catch (error: unknown) { // any 대신 unknown
       console.error('문의 작성 중 오류 발생:', error);
+      if (error instanceof Error) {
+        console.log("메시지:", error.message);
+      }
       alert("문의 작성에 실패했습니다.");
     }
   };

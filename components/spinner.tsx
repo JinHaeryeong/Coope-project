@@ -12,7 +12,7 @@ const spinnerVariants = cva(
                 default: "h-4 w-4",
                 sm: "h-2 w-2",
                 lg: "h-6 w-6",
-                icon: "h-10 w10"
+                icon: "h-10 w-10"
             }
         },
         defaultVariants: {
@@ -21,11 +21,11 @@ const spinnerVariants = cva(
     },
 );
 
-interface SpinnerProps extends VariantProps<typeof spinnerVariants> {}
+type SpinnerProps = VariantProps<typeof spinnerVariants>;
 
 export const Spinner = ({
     size,
-} : SpinnerProps) => {
+}: SpinnerProps) => {
     return (
         <Loader className={cn(spinnerVariants({ size }))} />
     );

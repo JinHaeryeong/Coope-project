@@ -1,5 +1,4 @@
 "use client"
-import React, { useRef } from 'react';
 import Image from "next/image";
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
@@ -36,16 +35,16 @@ const functionPage = () => {
                         <h6 className="text-right text-blue-500 pb-10 text-sm">Designed by Freepik</h6>
                     </div>
                     <div className="div-container">
-                    {functions.map((func, index) => {
-                        return (
+                        {functions.map((func, index) => {
+                            return (
                                 /*<div key={func.id} className='div-box rounded-lg cursor-pointer' onClick={functionTabs[index].onMoveToElement}>
                                     <h2 className='top-1/2 relative'>{func.name}</h2>
                                 </div>*/
                                 <Button key={func.id} className='w-11/12 h-40' onClick={functionTabs[index].onMoveToElement}>
                                     {func.name}
                                 </Button>
-                        )
-                    })}
+                            )
+                        })}
                     </div>
                     <div ref={functionTabs[0].element}>
                         <h1 className="text-3xl font-bold">기능1</h1>

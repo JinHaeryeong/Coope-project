@@ -40,7 +40,7 @@ const InquiryContent = () => {
         return <p>타인이 작성한 문의는 볼 수 없습니다.</p>
     }
 
-    const handleDelete = async (e: any) => {
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         try {
             await deleteInquiry({
@@ -52,17 +52,20 @@ const InquiryContent = () => {
             } else {
                 router.push("/csAdmin");
             }
-        } catch (error) {
+        } catch (error: unknown) {
             console.log("에러..임");
+
+            if (error instanceof Error) {
+                console.log("상태 메세지:", error.message);
+            }
+
+            return
         }
     }
 
-    const handleAnswer = (e: any) => {
-        if (!isanswerOpen) {
-            setIsanswerOpen(true);
-        }
-        else setIsanswerOpen(false);
-    }
+    const handleAnswer = () => {
+        setIsanswerOpen((prev) => !prev);
+    };
 
     const answerClose = () => { setIsanswerOpen(false) };
 

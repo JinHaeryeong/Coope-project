@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react";
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import React, { useRef, useState } from "react";
+import EmojiPicker from 'emoji-picker-react';
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { useUser } from "@clerk/clerk-react";
@@ -85,7 +85,7 @@ const NewPost = () => {
     router.push('/notice');
   };
 
-  const handleContnetChange = (e: any) => {
+  const handleContnetChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
   }
 
@@ -93,8 +93,8 @@ const NewPost = () => {
     setContent(prevContent => {
       const maxLength = 500;
       const emojiLength = 2;
-      if(prevContent.length <= maxLength || (prevContent.length >= maxLength && prevContent.length + emojiObject.emoji.length <= maxLength + emojiLength)) {
-        return prevContent+emojiObject.emoji;
+      if (prevContent.length <= maxLength || (prevContent.length >= maxLength && prevContent.length + emojiObject.emoji.length <= maxLength + emojiLength)) {
+        return prevContent + emojiObject.emoji;
       }
       else {
         return prevContent;
@@ -147,7 +147,7 @@ const NewPost = () => {
           <div className="count ml-auto text-gray-400 text-xs font-semibold">최대 입력 가능 500자</div>
 
         </div>
-        <EmojiPicker open={open} onEmojiClick={handleEmojiClick}/>
+        <EmojiPicker open={open} onEmojiClick={handleEmojiClick} />
 
 
         {/* buttons */}

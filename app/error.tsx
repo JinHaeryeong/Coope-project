@@ -22,9 +22,9 @@ const Error = () => {
         alt="error"
         className="hidden dark:block"
       />
-      <h2 className="text-xl font-medium">Something went wrong!</h2>
+      <h2 className="text-xl font-medium">잘못됨!</h2>
       <Button asChild>
-        <Link href="/">Go back</Link>
+        <Link href="/">돌아가기</Link>
       </Button>
     </div>
   );

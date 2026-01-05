@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import React, { useRef, useState } from "react";
 import WebRTCComponent from "./WebRtcComponent"; // WebRTC 추가
-import { Expand, Minus, PhoneOff, Square, SquareX, X } from "lucide-react";
+import { Expand, Minus, PhoneOff, X } from "lucide-react";
 import Draggable from "react-draggable";
 
 interface ModalProps {

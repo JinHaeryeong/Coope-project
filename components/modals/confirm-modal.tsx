@@ -1,32 +1,34 @@
-'use client'	
+'use client'
 
-import {AlertDialog,AlertDialogAction,AlertDialogCancel
-  ,AlertDialogContent,AlertDialogDescription
-  ,AlertDialogFooter,AlertDialogHeader,
-AlertDialogTitle,AlertDialogTrigger} from '@/components/ui/alert-dialog'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel
+  , AlertDialogContent, AlertDialogDescription
+  , AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
 import React from "react"
-import { usePathname, useParams, useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 interface ConfirmModalProps {
-  children:React.ReactNode
-  onConfirm:() => void
+  children: React.ReactNode
+  onConfirm: () => void
   documentId: string
   workspaceId: string;
 }
 
-export function ConfirmModal ({children,onConfirm,documentId, workspaceId }:ConfirmModalProps) {
+export function ConfirmModal({ children, onConfirm, documentId, workspaceId }: ConfirmModalProps) {
   const router = useRouter()
   const pathname = usePathname();
 
-  const handleConfirm = (e:React.MouseEvent<HTMLButtonElement,MouseEvent>) => {
+  const handleConfirm = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (pathname.includes(documentId)) {
       router.push(`/workspace/${workspaceId}/documents`);
     }
     e.stopPropagation()
     onConfirm()
   }
-  
-return (
+
+  return (
     <AlertDialog>
       <AlertDialogTrigger onClick={e => e.stopPropagation()} asChild>
         {children}
@@ -50,5 +52,5 @@ return (
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-)
+  )
 }

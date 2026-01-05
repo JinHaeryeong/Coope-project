@@ -4,9 +4,7 @@ import { Label } from "@/components/ui/label";
 import { PlusCircle, UserSearch } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import UserList from "./userList";
-import { useState } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { ChangeEvent, useState } from "react";
 const AddFriend = () => {
   const [searchUser, setSearchUser] = useState("");
   const [clickSearchUser, setClickSearchUser] = useState(false);
@@ -19,8 +17,9 @@ const AddFriend = () => {
     setClickSearchUser(true);
   };
 
-  const searchUserChange = (e: any) => {
+  const searchUserChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchUser(e.target.value);
+    if (clickSearchUser) setClickSearchUser(false);
   };
 
   const handleState = () => {

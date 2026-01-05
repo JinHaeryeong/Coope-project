@@ -10,6 +10,7 @@ import CommentList from "../../_components/commentList";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import Image from "next/image";
 
 /*
     Next Js 13v 이후부터는 useRouter등의 기능을 next/routes가 아니라 next/navigation에서 가져와야한다.. 이걸 몰라서 고생했다
@@ -38,15 +39,19 @@ const NoticePageContent = () => {
     }
 
     //삭제 버튼 클릭후 나타나는 Alert Dialog에서도 삭제버튼을 눌렀을 때 실행됨
-    const handleDelete = async (e: any) => {
+    const handleDelete = async (e: React.MouseEvent) => {
         e.preventDefault();
         try {
             await deleteNotice({
                 noticeId: noticeId
             });
             router.push("/notice");
-        } catch (error) {
-            console.log("에러..임");
+        } catch (error: unknown) {
+            console.log("공지사항 삭제 중 에러가 발생했습니다");
+            if (error instanceof Error) {
+                console.log("상태 메세지: ", error.message);
+            }
+            return
         }
     }
 
@@ -74,7 +79,7 @@ const NoticePageContent = () => {
                         <h2 className="text-xl font-bold mb-2">첨부 파일</h2>
                         <h3>{notice.fileName}</h3>
                         {notice.fileFormat?.startsWith('image/') ? (
-                            <img src={notice.fileUrl} alt="첨부 이미지" width="100%" height="600" />
+                            <Image src={notice.fileUrl} alt="첨부 이미지" width="800" height="600" />
                         ) : (
                             <Link href={notice.fileUrl} download={notice.fileName} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                                 파일 다운로드

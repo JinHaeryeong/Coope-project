@@ -1,9 +1,10 @@
 // _components/friends/message-item.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Doc } from "@/convex/_generated/dataModel";
 import Image from "next/image";
 
 interface MessageItemProps {
-    message: any; // 구체적인 Message 타입을 쓰기
+    message: Doc<"messages"> & { fileName?: string; format?: string };
     isMine: boolean;
     isSameSender: boolean;
     friendInfo: { name?: string; icon?: string };

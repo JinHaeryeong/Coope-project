@@ -85,7 +85,7 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose, userEmail,
         const maxFiles = 3;
         const maxFileSizeMB = 20;
 
-        let validFiles = [];
+        const validFiles: File[] = [];
         let totalFiles = selectedFiles.length;
 
         for (const file of files) {

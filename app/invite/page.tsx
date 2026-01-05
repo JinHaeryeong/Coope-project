@@ -7,7 +7,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Spinner } from '@/components/spinner';
 import { toast } from 'sonner';
-import { useAuth } from '@clerk/nextjs';
 
 // 기존 로직을 별도 컴포넌트로 분리
 function InviteContent() {
@@ -41,9 +40,11 @@ function InviteContent() {
             toast.success('워크스페이스에 참여했어요!');
           }
           router.push(`/workspace/${workspaceId}/documents`);
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('초대 실패:', err);
-          toast.error(err?.message || '워크스페이스 참여 중 오류가 발생했어요.');
+          if (err instanceof Error) {
+            toast.error(err.message || '워크스페이스 참여 중 오류가 발생했어요.');
+          }
         } finally {
           setLoading(false);
         }

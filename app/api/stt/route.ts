@@ -8,14 +8,14 @@ const openai = new OpenAI({
 export async function POST(req: NextRequest) {
   try {
     const { audioContent } = await req.json();
-    
+
     if (!audioContent) {
       return NextResponse.json({ error: "오디오 데이터가 없습니다." }, { status: 400 });
     }
 
     // base64 데이터에서 실제 오디오 데이터만 추출
     const base64Audio = audioContent.replace(/^data:audio\/\w+;codecs=opus;base64,/, '');
-    
+
     // base64를 Buffer로 변환
     const audioBuffer = Buffer.from(base64Audio, 'base64');
 
@@ -38,10 +38,18 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ transcript });
-  } catch (err: any) {
-    console.error("STT 처리 중 오류:", err);
+  } catch (err: unknown) {
+    console.error("STT(음성 인식) 처리 중 오류 발생:", err);
+
+    let errorMessage = "음성 인식(STT) 변환에 실패했습니다.";
+
+    // 에러 타입 가드 (instanceof Error)
+    if (err instanceof Error) {
+      errorMessage = err.message;
+    }
+
     return NextResponse.json(
-      { error: err.message || "STT 변환 실패" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { GenericId } from "convex/values";
-import { MouseEvent, SetStateAction, useState } from "react";
+import { SetStateAction, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 export const CommentList = ({ notice }: { notice: string }) => {
     const comments = useQuery(api.comments.listComments, { id: notice });
@@ -13,21 +13,24 @@ export const CommentList = ({ notice }: { notice: string }) => {
     const [commentIdToEdit, setCommentIdToEdit] = useState<Id<"comments"> | null>(null);//수정할 comment의 id를 저장하기 위해
     const { user } = useUser();
     const deleteComment = useMutation(api.comments.deleteComment);
-    const editedComment = useMutation(api.comments.editComment); 
+    const editedComment = useMutation(api.comments.editComment);
 
     //삭제 버튼 클릭후 나타나는 Alert Dialog에서도 삭제버튼을 눌렀을 때 실행됨
-    const handleDelete = async (id: GenericId<"comments">, e: any) => {
+    const handleDelete = async (id: GenericId<"comments">, e: React.MouseEvent) => {
         e.preventDefault();
         try {
             await deleteComment({
                 commentId: id
             });
-        } catch (error) {
-            console.log("에러..임");
+        } catch (error: unknown) {
+            console.log("댓글 삭제 중 오류 발생");
+            if (error instanceof Error) {
+                console.log("상태 메세지: " + error.message);
+            }
         }
     }
 
-    const handleEditButtonClick = (id: GenericId<"comments">, content: string, e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+    const handleEditButtonClick = (id: GenericId<"comments">, content: string) => {
         setCommentIdToEdit(id);
         setCommentEdit(content);
     }
@@ -38,7 +41,7 @@ export const CommentList = ({ notice }: { notice: string }) => {
 
     const handleCommentEdit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if(!commentIdToEdit){
+        if (!commentIdToEdit) {
             alert('수정할 코멘트가 없습니다.')
             return;
         }
@@ -49,8 +52,11 @@ export const CommentList = ({ notice }: { notice: string }) => {
                 content: commentEdit
             });
             setCommentIdToEdit(null);
-        } catch (error) {
+        } catch (error: unknown) {
             console.log('댓글 작성중 오류발생')
+            if (error instanceof Error) {
+                console.log("상태 메세지: " + error.message);
+            }
         }
     }
     return (
@@ -81,7 +87,7 @@ export const CommentList = ({ notice }: { notice: string }) => {
                                 }).format(new Date(comment._creationTime))}</div>
                                 {comment.authorId === user?.id &&
                                     <div className="text-right">
-                                        <Button variant="ghost" className="h-3" onClick={(e) => handleEditButtonClick(comment._id, comment.content, e)}>수정</Button>
+                                        <Button variant="ghost" className="h-3" onClick={() => handleEditButtonClick(comment._id, comment.content)}>수정</Button>
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="ghost" className="h-3">삭제</Button>
@@ -101,21 +107,21 @@ export const CommentList = ({ notice }: { notice: string }) => {
                                         </AlertDialog>
                                     </div>}
                                 {
-                                //commentIdToEdit과 comment._id가 같을 때만 나타나게 하지않으면 모든 댓글 밑에 수정 칸이 나타날 수 있을 것 같아서 이렇게 했습니다.
-                                commentIdToEdit === comment._id && (
-                                    <form onSubmit={handleCommentEdit} className="flex gap-2 w-full h-32" >
-                                        <textarea
-                                            name="content"
-                                            value={commentEdit}
-                                            onChange={editComment}
-                                            placeholder="수정할 댓글 내용을 입력해주세요"
-                                            required
-                                            className="h-full w-full comment-textarea"
-                                            maxLength={200}
-                                        />
-                                        <Button type="submit" className="h-full">등록</Button>
-                                    </form>
-                                )}
+                                    //commentIdToEdit과 comment._id가 같을 때만 나타나게 하지않으면 모든 댓글 밑에 수정 칸이 나타날 수 있을 것 같아서 이렇게 했습니다.
+                                    commentIdToEdit === comment._id && (
+                                        <form onSubmit={handleCommentEdit} className="flex gap-2 w-full h-32" >
+                                            <textarea
+                                                name="content"
+                                                value={commentEdit}
+                                                onChange={editComment}
+                                                placeholder="수정할 댓글 내용을 입력해주세요"
+                                                required
+                                                className="h-full w-full comment-textarea"
+                                                maxLength={200}
+                                            />
+                                            <Button type="submit" className="h-full">등록</Button>
+                                        </form>
+                                    )}
                             </div>
 
                         </div>

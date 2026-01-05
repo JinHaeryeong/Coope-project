@@ -34,6 +34,7 @@ import { TrashBox } from "./trash-box";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Navbar } from "./navbar";
 import InviteModal from "@/components/modals/invite-modal";
+import Image from "next/image";
 
 export const Navigation = () => {
   // 모든 훅은 최상단에!
@@ -152,7 +153,7 @@ export const Navigation = () => {
         )}
       >
         <div className="p-4">
-          <img
+          <Image
             src="/logo-dark.png"
             alt="Logo"
             className="w-44 h-auto ml-2 cursor-pointer hover:opacity-80 transition"
