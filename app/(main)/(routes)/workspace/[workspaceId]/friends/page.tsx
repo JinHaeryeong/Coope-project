@@ -37,6 +37,10 @@ const ListOfFriends = () => {
         <Image src="/robot.png" height={300} width={300} alt="empty" priority />
         <h2 className="text-lg font-medium">대화할 친구가 없어요. 새로운 친구를 추가해볼까요?</h2>
 
+        <div className="flex gap-2">
+          <AddFriend />
+          <FriendRequestList />
+        </div>
       </div>
     );
   }
