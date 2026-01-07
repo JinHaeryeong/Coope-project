@@ -56,7 +56,7 @@ const Notice = () => {
 
     return (
         // min-h-screen과 justify-center로 수직 중앙 정렬 기반 마련
-        <div className="min-h-screen flex flex-col justify-center">
+        <div className="min-h-screen flex flex-col pt-10">
             <div className="w-full max-w-full mx-auto flex flex-col items-center gap-y-10 px-6 box-border">
 
                 {/* 제목 부분 */}
