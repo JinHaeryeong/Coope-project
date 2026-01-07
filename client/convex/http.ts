@@ -63,9 +63,9 @@ http.route({
         })
       })
     }
-      await ctx.runMutation(api.chat.sendFile, {
-        storageId, author, fileName, roomId, format,text
-      });
+    await ctx.runMutation(api.chat.sendFile, {
+      storageId, author, fileName, roomId: roomId as Id<"rooms">, format, text
+    });
 
     // Step 3: Return a response with the correct CORS headers
     return new Response(null, {
@@ -118,7 +118,7 @@ http.route({
     const fileName = searchParams.get("fileName");
 
     const blob = await ctx.storage.get(storageId);
-    if( blob === null) {
+    if (blob === null) {
       return new Response("File not found", {
         status: 404,
       });
@@ -126,11 +126,11 @@ http.route({
 
     // Content-Disposition 헤더 설정
     const headers = new Headers();
-    if(fileName) {
+    if (fileName) {
       //파일 이름에 특수 문자가 있을 경우를 대비해 인코딩
       const encodedFileName = encodeURIComponent(fileName);
       headers.set(
-        "Content-Disposition", 
+        "Content-Disposition",
         `attachment; filename="${encodedFileName}"; filename*=UTF-8''${encodedFileName}`
       );
     }

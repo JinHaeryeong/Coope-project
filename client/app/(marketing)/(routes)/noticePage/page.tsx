@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import Image from "next/image";
-
+import { Id } from "@/convex/_generated/dataModel";
 /*
     Next Js 13v 이후부터는 useRouter등의 기능을 next/routes가 아니라 next/navigation에서 가져와야한다.. 이걸 몰라서 고생했다
     UI 수정 필요
@@ -120,8 +120,8 @@ const NoticePageContent = () => {
                         </AlertDialog>
                     </div>
                 }
-                <CommentForm notice={noticeId} />
-                <CommentList notice={noticeId} />
+                <CommentForm notice={noticeId as Id<"notices">} />
+                <CommentList notice={noticeId as Id<"notices">} />
             </div>
         </div>
     )

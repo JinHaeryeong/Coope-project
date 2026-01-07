@@ -7,9 +7,10 @@ import { useUser } from "@clerk/clerk-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { sendEmail } from "@/lib/action";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface AnswerWriteProps {
-    inquiry: string;
+    inquiry: Id<"inquiryDetails">;
     onClose: () => void;
     userEmail: string;
     userName: string;

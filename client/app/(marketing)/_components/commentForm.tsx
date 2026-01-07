@@ -3,8 +3,9 @@ import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { useMutation } from "convex/react";
 import { SetStateAction, useState } from "react";
+import { Id } from "@/convex/_generated/dataModel";
 
-export const CommentForm = ({ notice }: { notice: string }) => {
+export const CommentForm = ({ notice }: { notice: Id<"notices"> }) => {
     const [content, setContent] = useState(''); //처음에 comment로 했을 때 오류가 나서 얘가 문제 일줄 알고 이름 content로 바꿈 -> 근데 얘 이름은 문제가 아니었다
     const { user } = useUser();
     const addComment = useMutation(api.comments.addComment);

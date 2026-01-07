@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import AnswerWrite from "@/app/(marketing)/_components/answerWrite";
 import AnswerList from "@/app/(marketing)/_components/answers";
-
+import { Id } from "@/convex/_generated/dataModel";
 
 
 
@@ -138,7 +138,7 @@ const InquiryContent = () => {
                         </AlertDialog>
                     </div>
                 }
-                {isanswerOpen && <AnswerWrite inquiry={inquiryId} onClose={answerClose} userEmail={inquiry.userEmail} userName={inquiry.userName} />}
+                {isanswerOpen && <AnswerWrite inquiry={inquiryId as Id<"inquiryDetails">} onClose={answerClose} userEmail={inquiry.userEmail} userName={inquiry.userName} />}
                 <div><h2 className="text-2xl font-medium">답변</h2></div>
                 <AnswerList postId={inquiryId} />
             </div>
