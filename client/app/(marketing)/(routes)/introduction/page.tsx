@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { A11y, Navigation, Pagination, Scrollbar, Autoplay } from "swiper/modules";
-import { MailOpen, Github } from "lucide-react"; // 필요한 아이콘 임포트
+import { MailOpen, Github, ArrowRight } from "lucide-react";
 
 // Swiper 스타일
 import 'swiper/css';
@@ -15,12 +15,16 @@ import 'swiper/css/navigation';
 import { useConvexAuth } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { SignInButton } from "@clerk/clerk-react";
-import { useEnterWorkspace } from "@/hooks/use-enter-workspace";
+import { Spinner } from "@/components/spinner";
+import { useEnterWorkspace } from "@/hooks/use-enter-workspace"; // 커스텀 훅 임포트
 
 const Introduction = () => {
-    const { isAuthenticated, isLoading } = useConvexAuth();
+    const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
     const { onEnter, isLoading: workspaceLoading } = useEnterWorkspace();
     const target = useRef<HTMLDivElement>(null);
+
+    // 통합 로딩 상태 관리
+    const isLoading = authLoading || workspaceLoading;
 
     const pagination = {
         clickable: true,
@@ -76,24 +80,32 @@ const Introduction = () => {
                         </h2>
 
                         <div className="text-start my-6">
-                            {isAuthenticated && !isLoading ? (
+                            {isLoading ? (
+                                <div className="w-40 flex items-center justify-center">
+                                    <Spinner size="lg" />
+                                </div>
+                            ) : isAuthenticated ? (
                                 <>
                                     <Button className="shadow-lg mr-2" onClick={onEnter}>
-                                        Coope 시작하기
+                                        시작하기
+                                        <ArrowRight className="h-4 w-4 ml-2" />
                                     </Button>
                                     <Button variant="outline">기능 둘러보기</Button>
                                 </>
-                            ) : !isLoading && (
+                            ) : (
                                 <>
                                     <SignInButton mode="modal">
-                                        <Button className="mr-2">Get Coope free</Button>
+                                        <Button className="mr-2">
+                                            Get Coope free
+                                            <ArrowRight className="h-4 w-4 ml-2" />
+                                        </Button>
                                     </SignInButton>
                                     <Button variant="outline">문의하기</Button>
                                 </>
                             )}
                         </div>
 
-                        {/* Swiper: 자동 슬라이드 적용 */}
+                        {/* Swiper 및 팀원 섹션 레이아웃 (기존과 동일) */}
                         <Swiper
                             modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay]}
                             spaceBetween={50}
@@ -117,24 +129,17 @@ const Introduction = () => {
                             <SwiperSlide className="bg-muted flex items-center justify-center h-[400px]">Slide 4</SwiperSlide>
                         </Swiper>
 
-                        {/* 팀원 섹션: 파란색 붓칠 효과 포함 */}
                         <div className="relative mt-32 w-full">
                             <h2 className="text-4xl font-bold mb-10 text-center md:text-start">팀원</h2>
-
-                            {/* 배경 붓칠 효과 레이어: 부모의 패딩을 무시하고 화면 끝까지 확장 */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-40 bg-blue-500/10 blur-[100px] pointer-events-none -rotate-3" />
-
-                            {/* 실제 붓칠 띠 느낌 */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-28 bg-blue-600/20 skew-y-[-2deg] pointer-events-none border-y border-blue-400/10" />
 
-                            {/* 카드 그리드 */}
                             <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-10 justify-items-center pb-40">
                                 {teamMembers.map((member) => (
                                     <div
                                         key={member.id}
                                         className="mt-16 relative shadow-lg w-64 h-96 border-2 border-gray-300 dark:border-gray-700 flex items-center flex-col hover:bg-blue-600 hover:text-white transition-all duration-300 rounded-xl bg-background/90 backdrop-blur-sm group"
                                     >
-                                        {/* 카드 내용 (기존과 동일) */}
                                         <div className="absolute -top-10">
                                             <Image
                                                 src={"/universe.jpg"}
