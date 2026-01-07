@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { A11y, Navigation, Pagination, Scrollbar, Autoplay } from "swiper/modules";
-import { MailOpen, BookOpenText, Github } from "lucide-react"; // 필요한 아이콘 임포트
+import { MailOpen, Github } from "lucide-react"; // 필요한 아이콘 임포트
 
 // Swiper 스타일
 import 'swiper/css';
