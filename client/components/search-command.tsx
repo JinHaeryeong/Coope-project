@@ -15,7 +15,7 @@ import {
 import { useSearch } from "@/hooks/use-search"
 import { api } from "@/convex/_generated/api"
 import { useEffect, useState } from "react"
-import { Doc } from '../../convex/_generated/dataModel'
+import { Doc } from '@/convex/_generated/dataModel'
 
 export function SearchCommand() {
   const { user } = useUser()

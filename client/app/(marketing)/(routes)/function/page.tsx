@@ -6,7 +6,7 @@ import 'swiper/css/pagination';
 
 import useMoveScroll from '@/hooks/useMoveScroll';
 import { Button } from '@/components/ui/button';
-import ScrollToTop from '../../_components/ScrollToTop';
+import ScrollToTop from '@/app/(marketing)/_components/ScrollToTop';
 const functionPage = () => {
     const functionTabs = Array.from({ length: 5 }, () => useMoveScroll()); //클릭시 그 기능이 위치한 곳으로 스크롤을 이동시키기 위한 배열
     const functions =

@@ -9,8 +9,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import AnswerWrite from "../../_components/answerWrite";
-import AnswerList from "../../_components/answers";
+import AnswerWrite from "@/app/(marketing)/_components/answerWrite";
+import AnswerList from "@/app/(marketing)/_components/answers";
 
 
 
