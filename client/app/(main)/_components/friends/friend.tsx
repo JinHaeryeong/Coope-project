@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import { FunctionReturnType } from "convex/server";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { GenericId } from "convex/values";
 import { Phone } from "lucide-react";
 import CallModal from "../call/callModal";
 import FriendListItem from "./friend-list-item";
