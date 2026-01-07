@@ -114,7 +114,7 @@ export const deleteInquiry = mutation({
 export const answerInquiry = mutation({
     args: {
         content: v.string(),
-        inquiryId: v.string(),
+        inquiryId: v.id("inquiryDetails"),
         authorId: v.string(),
         files: v.array(v.object({
             storageId: v.id("_storage"),
@@ -178,7 +178,7 @@ export const ListAnswerFiles = query(
 //문의 답변 삭제
 
 export const deleteAnswer = mutation({
-    args: { answerId: v.id("inquiryAnswer")},
+    args: { answerId: v.id("inquiryAnswer") },
     handler: async (ctx, args) => {
         const answerId = args.answerId;
         const files = await ctx.db.query("inquiryAnswerFiles").filter((q) => q.eq(q.field("answerId"), answerId?.toString())).collect();

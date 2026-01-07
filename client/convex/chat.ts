@@ -4,7 +4,7 @@ import { mutation, query } from "./_generated/server";
 // 메세지 전송
 export const sendMessage = mutation({
     args: {
-        roomId: v.string(),
+        roomId: v.id("rooms"),
         senderId: v.string(),
         text: v.string(),
     },
@@ -35,7 +35,7 @@ export const sendMessage = mutation({
 //메세지 가져오기
 export const getMessages = query({
     args: {
-        roomId: v.string()  // 메시지를 가져올 채팅방 ID
+        roomId: v.id("rooms")  // 메시지를 가져올 채팅방 ID
     },
     handler: async (ctx, args) => {
         // 해당 roomId에 속한 모든 메시지를 가져옴
@@ -70,7 +70,7 @@ export const sendFile = mutation({
         author: v.string(),
         format: v.string(),
         fileName: v.string(),
-        roomId: v.string()
+        roomId: v.id("rooms"),
     },
     handler: async (ctx, args) => {
         const message = await ctx.db.insert("messages", {

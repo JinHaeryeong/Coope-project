@@ -15,6 +15,7 @@ import CallModal from "../call/callModal";
 import FriendListItem from "./friend-list-item";
 import { MessageItem } from "./message-item";
 import ChatInput from "./chat-input";
+import { Id } from "@/convex/_generated/dataModel"; // ID 타입을 가져옵니다
 
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
 
@@ -29,7 +30,7 @@ const FriendPage = ({ initialFriends }: FriendPageProps) => {
     const createOrGetChatRoom = useMutation(api.rooms.createOrGetChatRoom);
     const friendsList = initialFriends;
     const [messageInput, setMessageInput] = useState("");
-    const [selectedFriend, setSelectedFriend] = useState<FriendType & { roomId: string } | null>(null);
+    const [selectedFriend, setSelectedFriend] = useState<FriendType & { roomId: Id<"rooms"> } | null>(null);
     const sendMessage = useMutation(api.chat.sendMessage);
     //useQuery 훅을 사용할 때 "skip"을 인자로 전달하면 쿼리가 실행되지 않음. 즉, 조건부로 쿼리를 실행하고 싶을 때 사용할 수 있는 특별한 값~
     const messages = useQuery(api.chat.getMessages, selectedFriend ? { roomId: selectedFriend.roomId } : "skip");
@@ -41,26 +42,27 @@ const FriendPage = ({ initialFriends }: FriendPageProps) => {
         if (bottomRef.current) {
             bottomRef.current.scrollIntoView({ behavior: "auto" });
         }
-    })
+    }, [messages]);
     if (!user) {
         return <div className="h-full flex justify-center items-center">유저 정보 로딩중...</div>;
     }
 
 
-    const handleFriendClick = async (friend: { friendName: string | undefined; friendEmail: string | undefined; friendIcon: string | undefined; _id: GenericId<"friends">; _creationTime: number; userId: string; friendId: string; status: string; }) => {
+    const handleFriendClick = async (friend: FriendType) => {
         try {
-            const chatRoom = await createOrGetChatRoom({ user1Id: user.id, user2Id: friend.friendId });
+            const chatRoom = await createOrGetChatRoom({
+                user1Id: user.id,
+                user2Id: friend.friendId
+            });
 
-            if ('roomId' in chatRoom) {
+            if (chatRoom && 'roomId' in chatRoom) {
                 setSelectedFriend({
                     ...friend,
-                    roomId: chatRoom.roomId
-                })
-            } else {
-                console.log('채팅방의 번호가 없습니다.')
+                    roomId: chatRoom.roomId as Id<"rooms"> // 명시적 타입 캐스팅
+                });
             }
         } catch (error) {
-            console.log(error);
+            console.error("채팅방 연결 실패:", error);
         }
     }
 

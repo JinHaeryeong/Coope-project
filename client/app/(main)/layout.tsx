@@ -9,7 +9,6 @@ import { Navigation } from './_components/navigation';
 import { SearchCommand } from '@/components/search-command';
 import { Button } from '@/components/ui/button';
 import { Ghost } from 'lucide-react';
-import { Toaster } from 'sonner';
 import { AIChatModal } from '@/components/ai-chat-modal';
 import { ChatProvider } from '@/components/chat-context';
 import { EdgeStoreProvider } from '@/lib/edgestore';
@@ -64,7 +63,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </main>
 
           {/* 토스트 알림 */}
-          <Toaster />
+          {/* <Toaster /> */}
         </div>
       </ChatProvider>
     </EdgeStoreProvider>

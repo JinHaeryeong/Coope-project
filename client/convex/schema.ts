@@ -10,14 +10,14 @@ export default defineSchema({
     fileName: v.optional(v.string()),
     author: v.string(),
     authorId: v.string()
-  }),
+  }).index("by_author", ["authorId"]),
   comments: defineTable({
     content: v.string(),
     author: v.string(),
     authorId: v.string(),
-    postId: v.string(),
+    postId: v.id("notices"), // v.string() -> v.id("notices")
     authorImgUrl: v.string(),
-  }),
+  }).index("by_post", ["postId"]), // 인덱스 추가,
   documents: defineTable({
     title: v.string(),
     userId: v.string(),
@@ -29,13 +29,13 @@ export default defineSchema({
     isPublished: v.boolean(),
     workspaceId: v.string(),
   })
-  .index("by_user", ["userId"])
-  .index("by_user_parent", ["userId","parentDocument"])
-  .index("by_workspace", ["workspaceId"])
-  .index("by_workspace_parent", ["workspaceId", "parentDocument"]),
+    .index("by_user", ["userId"])
+    .index("by_user_parent", ["userId", "parentDocument"])
+    .index("by_workspace", ["workspaceId"])
+    .index("by_workspace_parent", ["workspaceId", "parentDocument"]),
   inquiryDetails: defineTable({
     userId: v.string(),
-    userName: v.string(), 
+    userName: v.string(),
     title: v.string(),
     content: v.string(),
     category: v.string(),
@@ -48,9 +48,9 @@ export default defineSchema({
     file: v.id("_storage"),
     fileName: v.string()
   }),
-  inquiryAnswer: defineTable ({
+  inquiryAnswer: defineTable({
     answer: v.string(),
-    postId: v.string(),
+    postId: v.id("inquiryDetails"),
     authorId: v.string()
   }),
   inquiryAnswerFiles: defineTable({
@@ -70,16 +70,18 @@ export default defineSchema({
     userId: v.string(),
     friendId: v.string(),
     status: v.string()
-}).index("byUserId", ["userId"])
-  .index("byFriendId", ["friendId"])
-  .index("byUserIdFriendId", ["userId", "friendId"]), // 복합 인덱스 추가
+  }).index("byUserId", ["userId"])
+    .index("byFriendId", ["friendId"])
+    .index("byUserIdFriendId", ["userId", "friendId"]), // 복합 인덱스 추가
   rooms: defineTable({
     roomId: v.string(),
     user1Id: v.string(),
     user2Id: v.string()
-  }),
+  }).index("by_user1", ["user1Id"])
+    .index("by_user2", ["user2Id"])
+    .index("by_users", ["user1Id", "user2Id"]),
   messages: defineTable({
-    roomId: v.string(),
+    roomId: v.id("rooms"),
     senderId: v.string(),
     text: v.string(),
     file: v.optional(v.id("_storage")),
@@ -88,16 +90,16 @@ export default defineSchema({
   }).index("byRoomId", ["roomId"]),
   userReadStatus: defineTable({
     lastReadmessageId: v.id("messages"),
-    roomId: v.string(),
+    roomId: v.id("rooms"),
     userId: v.string(),
   }),
   aiMessage: defineTable({
     userId: v.string(),
-     role: v.union(v.literal("user"), v.literal("ai")),
-     text: v.string(),
-     createdAt: v.number(),
-   }).index("by_user", ["userId"]),
-   aichatMessages: defineTable({
+    role: v.union(v.literal("user"), v.literal("ai")),
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_user", ["userId"]),
+  aichatMessages: defineTable({
     userId: v.string(),
     role: v.string(),
     content: v.string(),
@@ -106,13 +108,13 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_timestamp", ["userId", "timestamp"]),
   workspaces: defineTable({
-    name:  v.string(),
-    createdBy:  v.string(),// userId
+    name: v.string(),
+    createdBy: v.string(),// userId
   }),
   workspaceMembers: defineTable({
-    userId:  v.string(),
-    workspaceId:  v.string(),
-    role:  v.string(), // 'owner' | 'editor' | 'viewer'
+    userId: v.string(),
+    workspaceId: v.string(),
+    role: v.string(), // 'owner' | 'editor' | 'viewer'
   }).index('by_user', ['userId'])
     .index('by_workspace', ['workspaceId'])
     .index('by_user_workspace', ['userId', 'workspaceId']),
