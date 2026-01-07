@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,11 +15,12 @@ import 'swiper/css/navigation';
 import { useConvexAuth } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { SignInButton } from "@clerk/clerk-react";
+import { useEnterWorkspace } from "@/hooks/use-enter-workspace";
 
 const Introduction = () => {
     const { isAuthenticated, isLoading } = useConvexAuth();
+    const { onEnter, isLoading: workspaceLoading } = useEnterWorkspace();
     const target = useRef<HTMLDivElement>(null);
-    const { workspaceId } = useParams() as { workspaceId: string };
 
     const pagination = {
         clickable: true,
@@ -78,10 +78,8 @@ const Introduction = () => {
                         <div className="text-start my-6">
                             {isAuthenticated && !isLoading ? (
                                 <>
-                                    <Button asChild className="shadow-lg mr-2">
-                                        <Link href={`/workspace/${workspaceId}/documents`}>
-                                            Coope 시작하기
-                                        </Link>
+                                    <Button className="shadow-lg mr-2" onClick={onEnter}>
+                                        Coope 시작하기
                                     </Button>
                                     <Button variant="outline">기능 둘러보기</Button>
                                 </>
