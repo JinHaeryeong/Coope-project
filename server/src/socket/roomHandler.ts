@@ -42,22 +42,28 @@ export const handleSocketEvents = (io: Server, socket: Socket) => {
         socket.join(roomId);
         socketToRoom.set(socket.id, roomId);
 
-        // 기존 프로듀서 목록 전달
+
+        cb(currentRoom.router.rtpCapabilities);
+        console.log(`[Socket] 소켓 ${socket.id} -> 방 ${roomId} 조인 완료`);
+    });
+
+    socket.on("getExistingProducers", (cb) => {
+        const roomId = socketToRoom.get(socket.id);
+        const currentRoom = rooms.get(roomId || "");
+        if (!currentRoom) return cb([]);
+
         const existingProducers = Array.from(currentRoom.peers.values())
             .flatMap(peer => Array.from(peer.producers.values()))
+            // 본인의 프로듀서는 제외하고 필터링
+            .filter(producer => producer.appData.socketId !== socket.id)
             .map(producer => ({
                 producerId: producer.id,
                 kind: producer.kind,
                 appData: producer.appData,
-                socketId: socketToRoom.get(producer.appData.socketId as string) || producer.appData.socketId,
+                socketId: producer.appData.socketId,
             }));
 
-        if (existingProducers.length > 0) {
-            socket.emit("existingProducers", existingProducers);
-        }
-
-        cb(currentRoom.router.rtpCapabilities);
-        console.log(`[Socket] 소켓 ${socket.id} -> 방 ${roomId} 조인 완료`);
+        cb(existingProducers);
     });
 
     // RTP Capabilities 요청

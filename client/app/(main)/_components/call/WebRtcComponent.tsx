@@ -16,9 +16,10 @@ import {
 interface WebRtcProps {
   roomId: string;
   onRemoteVideoStream?: (stream: MediaStream) => void;
+  isFullScreen?: boolean;
 }
 
-export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcProps) {
+export default function WebRtcComponent({ roomId, onRemoteVideoStream, isFullScreen }: WebRtcProps) {
   // WebRTC 통신 관련 로직 가져오기
   const {
     streams,
@@ -47,13 +48,15 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className={`flex flex-col w-full transition-all duration-300 ${isFullScreen ? "h-full p-0" : "h-auto p-4 space-y-4"
+      }`}>
       {/* 비디오 렌더링 영역 */}
-      <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
+      <div className={`relative w-full bg-black rounded-xl overflow-hidden shadow-2xl transition-all duration-300 ${isFullScreen ? "flex-1" : "aspect-video"
+        }`}>
         {/* 상대방 비디오들이 들어가는 컨테이너 */}
         <div
           ref={remoteContainerRef}
-          className="absolute top-0 left-0 w-full h-full flex flex-wrap justify-center items-center gap-2 p-2"
+          className="absolute top-0 left-0 w-full flex flex-wrap justify-center items-center gap-2 p-2 z-0"
         />
 
         {/* 내 로컬 비디오 (상대방 화면공유 시 우측 하단으로 작아짐) */}
@@ -62,15 +65,16 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
           autoPlay
           muted
           playsInline
-          className={`absolute transition-all duration-300 shadow-md ${hasRemoteScreenShare
-            ? "w-1/4 bottom-4 right-4 z-10"
-            : "w-full h-full"
-            } object-cover border-2 border-white/20 rounded-lg bg-neutral-900`}
+          className={`absolute transition-all duration-300 shadow-md object-cover border-2 border-white/20 rounded-lg bg-neutral-900 ${hasRemoteScreenShare || isFullScreen
+            ? "w-1/4 bottom-4 right-4 z-10" // 공유 중이거나 전체화면이면 작게 유지
+            : "w-full h-full z-0"
+            }`}
         />
       </div>
 
       {/* 컨트롤 버튼 영역 */}
-      <div className="flex justify-center items-center gap-4">
+      <div className={`flex justify-center items-center gap-4 ${isFullScreen ? "py-6" : ""
+        }`}>
         {/* 카메라 토글 */}
         <Button
           variant={camEnabled ? "default" : "outline"}
