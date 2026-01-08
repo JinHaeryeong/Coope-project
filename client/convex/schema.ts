@@ -74,7 +74,6 @@ export default defineSchema({
     .index("byFriendId", ["friendId"])
     .index("byUserIdFriendId", ["userId", "friendId"]), // 복합 인덱스 추가
   rooms: defineTable({
-    roomId: v.string(),
     user1Id: v.string(),
     user2Id: v.string()
   }).index("by_user1", ["user1Id"])

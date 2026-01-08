@@ -20,6 +20,21 @@ const ChatInput = ({
     onSend,
     fileInputRef
 }: ChatInputProps) => {
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.nativeEvent.isComposing) return;
+
+        if (e.key === "Enter") {
+            if (e.shiftKey) {
+                // Shift + Enter는 기본 동작인 줄바꿈을 허용
+                return;
+            } else {
+                // 일반 Enter는 기본 줄바꿈을 막고 메시지를 전송
+                e.preventDefault();
+                onSend();
+            }
+        }
+    };
     return (
         // p-4를 추가해 여백을 주고, border-t로 경계선을 만들면 더 깔끔하게 하기
         <div className="w-full bottom-0 bg-white dark:bg-[#1F1F1F] p-4 border-t">
@@ -50,6 +65,7 @@ const ChatInput = ({
                     className="resize-none font-medium min-h-[40px] flex-1" // flex-1로 꽉 채우기
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     rows={1} // 기본 높이 설정
                 />
 
