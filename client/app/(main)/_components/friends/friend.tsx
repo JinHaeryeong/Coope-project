@@ -159,7 +159,7 @@ const FriendPage = ({ initialFriends }: FriendPageProps) => {
                         </div>
                         <div className="absolute bottom-5 right-2">
                             <div className="flex items-end">
-                                <div className="mr-2 font-medium">새로운 친구를 추가하고 싶나요?</div>
+                                <div className="mr-2 font-medium self-center">새로운 친구를 추가하고 싶나요?</div>
                                 <AddFriend />
                             </div>
                         </div>

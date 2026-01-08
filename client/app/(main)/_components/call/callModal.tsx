@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import React, { useRef, useState } from "react";
 import WebRTCComponent from "./WebRtcComponent"; // WebRTC 추가
-import { Expand, Minus, PhoneOff, X } from "lucide-react";
+import { Expand, Minus, PhoneOff, Square, SquareArrowOutDownLeft, X } from "lucide-react";
 import Draggable from "react-draggable";
 
 interface ModalProps {
@@ -12,7 +12,8 @@ interface ModalProps {
 
 
 const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(false); // 최소화 상태 관리
+  const [isFullScreen, setIsFullScreen] = useState(false); // 전체화면 상태 관리
   const draggableRef = useRef<HTMLDivElement>(null);
   const [remotePreviewStream, setRemotePreviewStream] = useState<MediaStream | null>(null);
 
@@ -26,8 +27,11 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
         <div className="rounded-lg p-6 w-5/12 h-auto border bg-white dark:bg-neutral-900">
           <h2 className="text-xl font-bold">통화</h2>
           <WebRTCComponent roomId={roomId} onRemoteVideoStream={setRemotePreviewStream} />
-          <Button variant="ghost" className="mt-4 ml-2 mr-1 px-2 py-2 rounded" onClick={() => setMinimized(true)}><Minus /></Button>
-          <Button variant="outline" className="mt-4 px-2 py-2 rounded" onClick={onClose}><X /></Button>
+          <div className="text-right space-x-2">
+            <Button variant="ghost" className="mt-4 ml-2 mr-1 px-2 py-2 rounded" onClick={() => setMinimized(true)}><Minus /></Button>
+            <Button variant="ghost" className="mt-4 px-2 py-2 rounded" onClick={() => setIsFullScreen(!isFullScreen)}>{isFullScreen ? <SquareArrowOutDownLeft /> : <Square />}</Button>
+            <Button variant="ghost" className="mt-4 px-2 py-2 rounded" onClick={onClose}><X /></Button>
+          </div>
         </div>
       </div>
 
