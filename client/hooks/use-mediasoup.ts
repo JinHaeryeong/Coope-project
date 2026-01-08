@@ -49,6 +49,7 @@ export const useMediasoup = (
     const retryCountsRef = useRef<Record<string, number>>({});
 
     const socketRef = useRef<ReturnType<typeof io> | null>(null);
+    const handleNewProducerRef = useRef<((info: ProducerInfo) => Promise<void>) | null>(null);
     const deviceRef = useRef<MediaDevice | null>(null);
     const sendTransportRef = useRef<Transport | null>(null);
     const recvTransportRef = useRef<Transport | null>(null);
@@ -67,7 +68,7 @@ export const useMediasoup = (
     const [hasRemoteScreenShare, setHasRemoteScreenShare] = useState(false);
     const [myProducers, setMyProducers] = useState<Record<string, any>>({});
 
-    // Mediasoup Core Functions
+    // Mediasoup 핵심 기능들
     const createDevice = async (rtpCapabilities: RtpCapabilities) => {
         const dev = new MediaDevice();
         await dev.load({ routerRtpCapabilities: rtpCapabilities });
@@ -189,6 +190,8 @@ export const useMediasoup = (
         });
     }, [onRemoteVideoStream]);
 
+
+
     // Media Controls (Toggle Functions)
     const stopMedia = (type: StreamType) => {
         setStreams((prev) => {
@@ -278,8 +281,11 @@ export const useMediasoup = (
             setMicEnabled(true);
         }
     };
+    useEffect(() => {
+        handleNewProducerRef.current = handleNewProducer;
+    }, [handleNewProducer]);
 
-    // Socket Lifecycle
+    // Socket 생명주기..? (의존성에서 handleNewProducer를 제거!)
     useEffect(() => {
         const SERVER_URL = process.env.NEXT_PUBLIC_SIGNALING_SERVER_URL || "http://localhost:4000";
         const sock = io(SERVER_URL);
@@ -291,12 +297,14 @@ export const useMediasoup = (
 
                 sock.emit("getExistingProducers", (producers: ProducerInfo[]) => {
                     console.log("로딩 완료 후 기존 프로듀서 수신:", producers);
-                    producers.forEach(handleNewProducer);
+                    producers.forEach(p => handleNewProducerRef.current?.(p));
                 });
             });
         });
 
-        sock.on("new-producer", handleNewProducer);
+        sock.on("new-producer", (producerInfo) => {
+            handleNewProducerRef.current?.(producerInfo);
+        });
         sock.on("producer-closed", (id) => {
             console.log(`서버로부터 프로듀서 종료 알림 받음: ${id}`);
 
@@ -319,7 +327,7 @@ export const useMediasoup = (
             // 모든 재시도 타이머 제거 (메모리 누수 방지)
             Object.values(retryTimersRef.current).forEach(clearTimeout);
         };
-    }, [roomId, handleNewProducer]);
+    }, [roomId]);
 
     return {
         streams,
