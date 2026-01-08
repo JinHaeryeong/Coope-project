@@ -193,7 +193,7 @@ export const Navigation = () => {
       <div
         ref={navbarRef}
         className={cn(
-          "absolute top-0 z-[9999] pointer-events-none",
+          "absolute top-0 z-[9998] pointer-events-none",
           isResetting && "transition-all ease-in-out duration-300",
           isCollapsed ? "left-0 w-full" : "left-60 w-[calc(100%-240px)]"
         )}

@@ -22,15 +22,42 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
   return (
     <>
       <div
-        className={`fixed inset-0 z-50 ${minimized ? "hidden" : "flex items-center justify-center bg-black bg-opacity-50"}`}
+        className={`
+          fixed inset-0 z-[99999] transition-all duration-300
+          ${minimized ? "hidden" : "flex items-center justify-center bg-black/60 backdrop-blur-sm"}
+        `}
       >
-        <div className="rounded-lg p-6 w-5/12 h-auto border bg-white dark:bg-neutral-900">
-          <h2 className="text-xl font-bold">통화</h2>
-          <WebRTCComponent roomId={roomId} onRemoteVideoStream={setRemotePreviewStream} />
-          <div className="text-right space-x-2">
-            <Button variant="ghost" className="mt-4 ml-2 mr-1 px-2 py-2 rounded" onClick={() => setMinimized(true)}><Minus /></Button>
-            <Button variant="ghost" className="mt-4 px-2 py-2 rounded" onClick={() => setIsFullScreen(!isFullScreen)}>{isFullScreen ? <SquareArrowOutDownLeft /> : <Square />}</Button>
-            <Button variant="ghost" className="mt-4 px-2 py-2 rounded" onClick={onClose}><X /></Button>
+        <div
+          className={`
+            relative transition-all duration-300 border bg-white dark:bg-neutral-900 shadow-2xl
+            ${isFullScreen
+              ? "w-screen h-screen rounded-none p-10" // 전체 화면 모드
+              : "w-11/12 md:w-8/12 lg:w-5/12 h-auto rounded-2xl p-6" // 기본 모달 모드
+            }
+          `}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">통화</h2>
+          </div>
+
+          <div className={`${isFullScreen ? "h-[calc(100%-80px)]" : "h-auto"}`}>
+            <WebRTCComponent
+              roomId={roomId}
+              onRemoteVideoStream={setRemotePreviewStream}
+              isFullScreen={isFullScreen}
+            />
+          </div>
+
+          <div className="text-right space-x-2 mt-4">
+            <Button variant="ghost" size="icon" onClick={() => setMinimized(true)}>
+              <Minus />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setIsFullScreen(!isFullScreen)}>
+              {isFullScreen ? <SquareArrowOutDownLeft /> : <Square />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X />
+            </Button>
           </div>
         </div>
       </div>
