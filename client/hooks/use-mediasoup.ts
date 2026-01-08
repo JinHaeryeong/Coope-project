@@ -288,19 +288,23 @@ export const useMediasoup = (
         sock.on("connect", async () => {
             sock.emit("joinRoom", roomId, async (rtpCapabilities: RtpCapabilities) => {
                 await createDevice(rtpCapabilities);
+
+                sock.emit("getExistingProducers", (producers: ProducerInfo[]) => {
+                    console.log("로딩 완료 후 기존 프로듀서 수신:", producers);
+                    producers.forEach(handleNewProducer);
+                });
             });
         });
 
-        sock.on("existingProducers", (producers: ProducerInfo[]) => producers.forEach(handleNewProducer));
         sock.on("new-producer", handleNewProducer);
         sock.on("producer-closed", (id) => {
             console.log(`서버로부터 프로듀서 종료 알림 받음: ${id}`);
 
-            // 1. DOM 제거
+            // DOM 제거
             remoteContainerRef.current?.querySelector(`[data-producer-id="${id}"]`)?.remove();
             document.querySelector(`audio[data-producer-id="${id}"]`)?.remove();
 
-            // 2. 화면 공유 상태 업데이트
+            // 화면 공유 상태 업데이트
             if (hasRemoteScreenShare) {
                 const remainingScreen = remoteContainerRef.current?.querySelector('[data-type="screen"]');
                 if (!remainingScreen) setHasRemoteScreenShare(false);
