@@ -11,7 +11,7 @@ import {
     Transport,
 } from "mediasoup-client/types";
 
-// 타입 정의
+// --- 타입 정의 ---
 type StreamType = "camera" | "screen" | "mic";
 
 type ProducerInfo = {
@@ -21,76 +21,94 @@ type ProducerInfo = {
     socketId: string;
 };
 
+export interface RemoteStreamInfo {
+    producerId: string;
+    socketId: string;
+    type: StreamType;
+    stream: MediaStream;
+}
+
 interface UseMediasoupReturn {
     streams: {
         camera: MediaStream | null;
         screen: MediaStream | null;
         mic: MediaStream | null;
     };
+    remoteStreams: RemoteStreamInfo[];
     camEnabled: boolean;
     micEnabled: boolean;
     hasRemoteScreenShare: boolean;
     localVideoRef: React.RefObject<HTMLVideoElement | null>;
-    remoteContainerRef: React.RefObject<HTMLDivElement | null>;
     toggleCamera: () => void;
     toggleScreen: () => void;
     toggleMic: () => Promise<void>;
 }
 
-
-
 export const useMediasoup = (
     roomId: string,
     onRemoteVideoStream?: (stream: MediaStream) => void
 ): UseMediasoupReturn => {
-    // Refs & States
-    // Copilot 조언대로 컴포넌트 상단에 타이머 보관용 Ref 추가
-    const retryTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
-    const retryCountsRef = useRef<Record<string, number>>({});
-
+    // --- Refs: WebRTC 핵심 객체 및 소켓 관리 ---
     const socketRef = useRef<ReturnType<typeof io> | null>(null);
-    const handleNewProducerRef = useRef<((info: ProducerInfo) => Promise<void>) | null>(null);
     const deviceRef = useRef<MediaDevice | null>(null);
     const sendTransportRef = useRef<Transport | null>(null);
     const recvTransportRef = useRef<Transport | null>(null);
-
     const localVideoRef = useRef<HTMLVideoElement>(null);
-    const remoteContainerRef = useRef<HTMLDivElement>(null);
 
+    // 이벤트 핸들러 최신화 및 재시도 타이머 관리
+    const handleNewProducerRef = useRef<((info: ProducerInfo) => Promise<void>) | null>(null);
+    const retryTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+    const retryCountsRef = useRef<Record<string, number>>({});
+
+    // --- States: UI 동기화용 상태 ---
     const [streams, setStreams] = useState({
         camera: null as MediaStream | null,
         screen: null as MediaStream | null,
         mic: null as MediaStream | null,
     });
-
+    const [remoteStreams, setRemoteStreams] = useState<RemoteStreamInfo[]>([]);
     const [camEnabled, setCamEnabled] = useState(false);
     const [micEnabled, setMicEnabled] = useState(false);
-    const [hasRemoteScreenShare, setHasRemoteScreenShare] = useState(false);
     const [myProducers, setMyProducers] = useState<Record<string, any>>({});
 
-    // Mediasoup 핵심 기능들
+    const hasRemoteScreenShare = remoteStreams.some((s) => s.type === "screen");
+
+    // --- 헬퍼: 안전한 Device 객체 참조 ---
+    const getDevice = useCallback(() => {
+        if (!deviceRef.current || !deviceRef.current.loaded) {
+            throw new Error("Mediasoup Device가 로드되지 않았습니다.");
+        }
+        return deviceRef.current;
+    }, []);
+
+    // --- Mediasoup 로직: Worker/Router 연결 ---
     const createDevice = async (rtpCapabilities: RtpCapabilities) => {
+        if (deviceRef.current?.loaded) return deviceRef.current;
         const dev = new MediaDevice();
         await dev.load({ routerRtpCapabilities: rtpCapabilities });
         deviceRef.current = dev;
         return dev;
     };
 
-    const getRtpCapabilities = async (): Promise<RtpCapabilities> => {
-        return await new Promise((res) => {
-            socketRef.current?.emit("getRouterRtpCapabilities", {}, res);
+    const createRecvTransport = async () => {
+        if (recvTransportRef.current) return recvTransportRef.current;
+        const transportInfo = await new Promise<TransportOptions>((res) => {
+            socketRef.current?.emit("create-recv-transport", {}, res);
         });
+        const transport = getDevice().createRecvTransport(transportInfo);
+        transport.on("connect", ({ dtlsParameters }, callback) => {
+            socketRef.current?.emit("recv-transport-connect", { dtlsParameters }, callback);
+        });
+        recvTransportRef.current = transport;
+        return transport;
     };
 
     const createSendTransport = async () => {
         if (sendTransportRef.current) return sendTransportRef.current;
-
         const transportInfo = await new Promise<TransportOptions>((res) => {
             socketRef.current?.emit("create-transport", {}, res);
         });
-
-        const dev = deviceRef.current ?? (await createDevice(await getRtpCapabilities()));
-        const transport = dev.createSendTransport(transportInfo);
+        const transport = getDevice().createSendTransport(transportInfo);
 
         transport.on("connect", ({ dtlsParameters }, callback) => {
             socketRef.current?.emit("transport-connect", { dtlsParameters });
@@ -107,75 +125,40 @@ export const useMediasoup = (
         return transport;
     };
 
-    const createRecvTransport = async () => {
-        if (recvTransportRef.current) return recvTransportRef.current;
-
-        const transportInfo = await new Promise<TransportOptions>((res, rej) => {
-            if (!socketRef.current) return rej("소켓 없음");
-            socketRef.current.emit("create-recv-transport", {}, res);
-        });
-
-        const dev = deviceRef.current ?? (await createDevice(await getRtpCapabilities()));
-        const transport = dev.createRecvTransport(transportInfo);
-
-        transport.on("connect", ({ dtlsParameters }, callback) => {
-            socketRef.current?.emit("recv-transport-connect", { dtlsParameters }, callback);
-        });
-
-        recvTransportRef.current = transport;
-        return transport;
-    };
-
+    // --- 신규 참여자(Producer) 처리 ---
     const handleNewProducer = useCallback(async (info: ProducerInfo) => {
         const socket = socketRef.current;
-        if (!deviceRef.current || !deviceRef.current.loaded) {
+
+        if (!deviceRef.current?.loaded) {
             const currentRetry = retryCountsRef.current[info.producerId] || 0;
-            if (currentRetry > 10) {
-                console.error(`장치 로딩 실패: 프로듀서 ${info.producerId} 수신 불가`);
-                delete retryCountsRef.current[info.producerId];
-                return;
-            }
-            // 이미 예약된 타이머가 있으면 취소 (중복 실행 방지)
-            if (retryTimersRef.current[info.producerId]) {
-                clearTimeout(retryTimersRef.current[info.producerId]);
-            }
-            console.log("장치 로딩 대기 중... 재시도합니다.");
+            if (currentRetry > 10) return;
+            if (retryTimersRef.current[info.producerId]) clearTimeout(retryTimersRef.current[info.producerId]);
             retryCountsRef.current[info.producerId] = currentRetry + 1;
-            retryTimersRef.current[info.producerId] = setTimeout(() => {
-                handleNewProducer(info);
-            }, 500);
+            retryTimersRef.current[info.producerId] = setTimeout(() => handleNewProducer(info), 500);
             return;
         }
-        if (retryTimersRef.current[info.producerId]) {
-            clearTimeout(retryTimersRef.current[info.producerId]);
-            delete retryTimersRef.current[info.producerId];
-        }
-        const device = deviceRef.current;
 
         if (!socket) return;
-
         const transport = await createRecvTransport();
-        const { id, producerId, kind, rtpParameters, appData } = await new Promise<any>((res) => {
-            socket.emit("consume", { producerId: info.producerId, rtpCapabilities: device.rtpCapabilities }, res);
+
+        const { id, producerId, kind, rtpParameters } = await new Promise<any>((res) => {
+            socket.emit("consume", {
+                producerId: info.producerId,
+                rtpCapabilities: getDevice().rtpCapabilities
+            }, res);
         });
 
         const consumer = await transport.consume({ id, producerId, kind, rtpParameters });
         const stream = new MediaStream([consumer.track]);
 
         if (kind === "video") {
-            const videoEl = document.createElement("video");
-            videoEl.srcObject = stream;
-            videoEl.autoplay = true;
-            videoEl.playsInline = true;
-            videoEl.setAttribute("data-producer-id", producerId);
-            videoEl.setAttribute("data-type", appData.type);
-            videoEl.className = "w-full h-full object-cover border border-white";
-
-            setHasRemoteScreenShare(true);
-            remoteContainerRef.current?.appendChild(videoEl);
+            setRemoteStreams((prev) => [
+                ...prev.filter(s => s.producerId !== info.producerId),
+                { producerId: info.producerId, socketId: info.socketId, type: info.appData.type, stream }
+            ]);
             onRemoteVideoStream?.(stream);
         } else {
-            const audioEl = document.createElement("audio");
+            const audioEl = new Audio();
             audioEl.srcObject = stream;
             audioEl.autoplay = true;
             audioEl.setAttribute("data-producer-id", producerId);
@@ -183,109 +166,94 @@ export const useMediasoup = (
         }
 
         consumer.on("trackended", () => {
-            document.querySelector(`[data-producer-id="${producerId}"]`)?.remove();
-            if (appData.type === "screen") {
-                setHasRemoteScreenShare(!!remoteContainerRef.current?.querySelector('[data-type="screen"]'));
-            }
+            setRemoteStreams((prev) => prev.filter((s) => s.producerId !== producerId));
         });
-    }, [onRemoteVideoStream]);
+    }, [onRemoteVideoStream, getDevice]);
 
-
-
-    // Media Controls (Toggle Functions)
-    const stopMedia = (type: StreamType) => {
-        setStreams((prev) => {
-            const stream = prev[type];
-            stream?.getTracks().forEach((t) => t.stop());
-            return { ...prev, [type]: null };
-        });
-
-        setMyProducers((prev) => {
-            const producer = prev[type];
-            if (producer) {
-                console.log(`[Client] Producer 종료 요청: ${type}`);
-                socketRef.current?.emit("close-producer", producer.id);
-                producer.close();
-            }
-            return { ...prev, [type]: undefined };
-        });
-
-        if (type === "camera") setCamEnabled(false);
-
-        // Transport는 다른 미디어(마이크 등)가 없을 때만 닫거나, 
-        // 사실 굳이 닫지 않고 유지하는 것이 재연결 성능에 더 좋습니다.
-    };
-
-    const startMedia = async (type: StreamType) => {
-        // 반대 미디어 종료 (카메라 켜면 화면공유 끄기 등)
-        if (type === "camera" && streams.screen) stopMedia("screen");
-        if (type === "screen" && streams.camera) stopMedia("camera");
-
-        const stream = type === "camera"
-            ? await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 640 }, // ideal을 사용하여 유연하게 대응
-                    height: { ideal: 480 },
-                    frameRate: { ideal: 30 }
-                }
-            })
-            : await navigator.mediaDevices.getDisplayMedia({ video: true });
-
-        const transport = await createSendTransport();
-        const videoTrack = stream.getVideoTracks()[0];
-        const producer = await transport.produce({ track: videoTrack, appData: { type } });
-
-        setMyProducers(prev => ({ ...prev, [type]: producer }));
-        setStreams(prev => ({ ...prev, [type]: stream }));
-        if (type === "camera") setCamEnabled(true);
-
-        if (localVideoRef.current) {
-            localVideoRef.current.srcObject = new MediaStream([videoTrack]);
-        }
-
-        if (type === "screen") {
-            videoTrack.onended = () => {
-                console.log("화면 공유 트랙 종료됨 (브라우저 UI)");
-
-                // 서버에 알리기
-                socketRef.current?.emit("close-producer", producer.id);
-
-                // 미디어 클로즈
-                producer.close();
-                stream.getTracks().forEach(t => t.stop());
-
-                // 상태 정리
-                setMyProducers(prev => ({ ...prev, screen: undefined }));
-                setStreams(prev => ({ ...prev, screen: null }));
-            };
-        }
-    };
-
-    const toggleCamera = () => streams.camera ? stopMedia("camera") : startMedia("camera");
-    const toggleScreen = () => streams.screen ? stopMedia("screen") : startMedia("screen");
-
-    const toggleMic = async () => {
-        if (micEnabled) {
-            streams.mic?.getTracks().forEach(t => t.stop());
-            myProducers.mic?.close();
-            socketRef.current?.emit("close-producer", myProducers.mic?.id);
-            setMyProducers(prev => ({ ...prev, mic: undefined }));
-            setStreams(prev => ({ ...prev, mic: null }));
-            setMicEnabled(false);
-        } else {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const transport = await createSendTransport();
-            const producer = await transport.produce({ track: stream.getAudioTracks()[0], appData: { type: "mic" } });
-            setMyProducers(prev => ({ ...prev, mic: producer }));
-            setStreams(prev => ({ ...prev, mic: stream }));
-            setMicEnabled(true);
-        }
-    };
     useEffect(() => {
         handleNewProducerRef.current = handleNewProducer;
     }, [handleNewProducer]);
 
-    // Socket 생명주기..? (의존성에서 handleNewProducer를 제거!)
+    // --- 미디어 제어 함수 (Refactoring: Consistency 추가) ---
+    const stopMedia = useCallback((type: StreamType) => {
+        setStreams((prev) => {
+            const currentStream = prev[type];
+            if (currentStream) {
+                currentStream.getTracks().forEach((t) => t.stop());
+            }
+            return { ...prev, [type]: null };
+        });
+
+        const producer = myProducers[type];
+        if (producer) {
+            socketRef.current?.emit("close-producer", producer.id);
+            producer.close();
+            setMyProducers((prev) => {
+                const newProducers = { ...prev };
+                delete newProducers[type];
+                return newProducers;
+            });
+        }
+
+        // 상태 플래그 업데이트
+        if (type === "camera") setCamEnabled(false);
+        if (type === "mic") setMicEnabled(false);
+    }, [myProducers]);
+
+    const startMedia = async (type: StreamType) => {
+        try {
+            if (type === "camera" && streams.screen) stopMedia("screen");
+            if (type === "screen" && streams.camera) stopMedia("camera");
+
+            // [Ref반영] Ideal 설정을 통해 기기 호환성 확보
+            const stream = type === "camera"
+                ? await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        frameRate: { ideal: 30 }
+                    }
+                })
+                : await navigator.mediaDevices.getDisplayMedia({ video: true });
+
+            const transport = await createSendTransport();
+            const videoTrack = stream.getVideoTracks()[0];
+            const producer = await transport.produce({ track: videoTrack, appData: { type } });
+
+            setMyProducers(prev => ({ ...prev, [type]: producer }));
+            setStreams(prev => ({ ...prev, [type]: stream }));
+            if (type === "camera") setCamEnabled(true);
+
+            videoTrack.onended = () => stopMedia(type);
+        } catch (error) {
+            console.error(`${type} 시작 실패:`, error);
+        }
+    };
+
+    const toggleCamera = () => (streams.camera ? stopMedia("camera") : startMedia("camera"));
+    const toggleScreen = () => (streams.screen ? stopMedia("screen") : startMedia("screen"));
+
+    const toggleMic = async () => {
+        if (micEnabled) {
+            stopMedia("mic");
+        } else {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const transport = await createSendTransport();
+                const producer = await transport.produce({
+                    track: stream.getAudioTracks()[0],
+                    appData: { type: "mic" }
+                });
+                setMyProducers(prev => ({ ...prev, mic: producer }));
+                setStreams(prev => ({ ...prev, mic: stream }));
+                setMicEnabled(true);
+            } catch (error) {
+                console.error("마이크 시작 실패:", error);
+            }
+        }
+    };
+
+    // --- Socket 및 연결 생명주기 관리 ---
     useEffect(() => {
         const SERVER_URL = process.env.NEXT_PUBLIC_SIGNALING_SERVER_URL || "http://localhost:4000";
         const sock = io(SERVER_URL);
@@ -294,50 +262,41 @@ export const useMediasoup = (
         sock.on("connect", async () => {
             sock.emit("joinRoom", roomId, async (rtpCapabilities: RtpCapabilities) => {
                 await createDevice(rtpCapabilities);
-
                 sock.emit("getExistingProducers", (producers: ProducerInfo[]) => {
-                    console.log("로딩 완료 후 기존 프로듀서 수신:", producers);
-                    producers.forEach(p => handleNewProducerRef.current?.(p));
+                    producers.forEach((p) => handleNewProducerRef.current?.(p));
                 });
             });
         });
 
-        sock.on("new-producer", (producerInfo) => {
-            handleNewProducerRef.current?.(producerInfo);
+        sock.on("new-producer", (info) => {
+            handleNewProducerRef.current?.(info);
         });
+
         sock.on("producer-closed", (id) => {
-            console.log(`서버로부터 프로듀서 종료 알림 받음: ${id}`);
-
-            // DOM 제거
-            remoteContainerRef.current?.querySelector(`[data-producer-id="${id}"]`)?.remove();
-            document.querySelector(`audio[data-producer-id="${id}"]`)?.remove();
-
-            // 화면 공유 상태 업데이트
-            if (hasRemoteScreenShare) {
-                const remainingScreen = remoteContainerRef.current?.querySelector('[data-type="screen"]');
-                if (!remainingScreen) setHasRemoteScreenShare(false);
-            }
+            setRemoteStreams((prev) => prev.filter((s) => s.producerId !== id));
+            document.querySelectorAll(`audio[data-producer-id="${id}"]`).forEach(el => el.remove());
         });
 
         return () => {
             sock.disconnect();
             sendTransportRef.current?.close();
             recvTransportRef.current?.close();
-
-            // 모든 재시도 타이머 제거 (메모리 누수 방지)
+            sendTransportRef.current = null;
+            recvTransportRef.current = null;
+            deviceRef.current = null;
             Object.values(retryTimersRef.current).forEach(clearTimeout);
         };
     }, [roomId]);
 
     return {
         streams,
+        remoteStreams,
         camEnabled,
         micEnabled,
         hasRemoteScreenShare,
         localVideoRef,
-        remoteContainerRef,
         toggleCamera,
         toggleScreen,
-        toggleMic
+        toggleMic,
     };
 };
