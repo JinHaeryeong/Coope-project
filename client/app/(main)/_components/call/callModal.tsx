@@ -15,7 +15,6 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
   const [minimized, setMinimized] = useState(false); // 최소화 상태 관리
   const [isFullScreen, setIsFullScreen] = useState(false); // 전체화면 상태 관리
   const draggableRef = useRef<HTMLDivElement>(null);
-  const [remotePreviewStream, setRemotePreviewStream] = useState<MediaStream | null>(null);
 
   if (!isOpen && !minimized) return null;
 
@@ -31,19 +30,18 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
           className={`
             relative transition-all duration-300 border bg-white dark:bg-neutral-900 shadow-2xl
             ${isFullScreen
-              ? "w-screen h-screen rounded-none p-10" // 전체 화면 모드
+              ? "w-screen h-screen rounded-none" // 전체 화면 모드
               : "w-11/12 md:w-8/12 lg:w-5/12 h-auto rounded-2xl p-6" // 기본 모달 모드
             }
           `}
         >
-          <div className="flex justify-between items-center mb-4">
+          {!isFullScreen && <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">통화</h2>
-          </div>
+          </div>}
 
           <div className={`${isFullScreen ? "h-[calc(100%-80px)]" : "h-auto"}`}>
             <WebRTCComponent
               roomId={roomId}
-              onRemoteVideoStream={setRemotePreviewStream}
               isFullScreen={isFullScreen}
             />
           </div>
@@ -65,7 +63,6 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
       {minimized && (
         <Draggable nodeRef={draggableRef as React.RefObject<HTMLElement>}>
           <div ref={draggableRef} className="fixed bottom-4 right-4 z-50 bg-neutral-900 text-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-3">
-            {remotePreviewStream && <video autoPlay playsInline muted className="w-24 h-16 rounded" ref={(el) => { if (el) el.srcObject = remotePreviewStream }} />}
             <span className="text-sm">통화 중...</span>
             <Button size="icon" variant="ghost" onClick={() => setMinimized(false)}><Expand /></Button>
             <Button size="icon" variant="ghost" onClick={() => {
