@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useQuery } from "convex/react";
+// 핵심: usePaginatedQuery로 변경
+import { usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -39,41 +40,62 @@ const formatDate = (timeStamp: string | number | Date) => {
 };
 
 const Notice = () => {
-    const notices = useQuery(api.notices.get);
-    const [currentPage, setCurrentPage] = useState<number>(1);
     const noticesPerPage = 10;
+
+    // 서버 측 페이지네이션 쿼리 호출
+    // results: 현재까지 로드된 데이터 리스트
+    // status: 로딩 상태
+    // loadMore: 다음 데이터를 더 불러오는 함수
+    const { results, status, loadMore } = usePaginatedQuery(
+        api.notices.getPaginated, // 아까 서버에 만든 함수
+        {},
+        { initialNumItems: noticesPerPage }
+    );
+
+    const [currentPage, setCurrentPage] = useState<number>(1);
     const { user } = useUser();
     const userRole = user?.publicMetadata?.role;
 
-    // 데이터 슬라이스 및 정렬 로직은 그대로 유지
-    const sortedNotices = notices ? [...notices].sort((a, b) => new Date(b._creationTime).getTime() - new Date(a._creationTime).getTime()) : [];
-    const paginatedNotices = sortedNotices.slice((currentPage - 1) * noticesPerPage, currentPage * noticesPerPage);
-    const pageCount = notices ? Math.ceil(notices.length / noticesPerPage) : 1;
+    // 2. 현재 페이지에 맞는 데이터를 보여주는 로직
+    // usePaginatedQuery는 데이터를 누적해서 가져오므로 slice가 필요함
+    const paginatedNotices = results.slice(
+        (currentPage - 1) * noticesPerPage,
+        currentPage * noticesPerPage
+    );
 
+    // 3. 페이지 변경 핸들러 (데이터가 부족하면 서버에 더 요청)
     const handlePageChange = (pageNumber: number) => {
+        // 현재 로드된 데이터 기준으로 마지막 페이지 계산
+        const lastLoadedPage = Math.ceil(results.length / noticesPerPage);
+
+        // 다음 페이지 데이터가 없으면 서버에서 더 가져옴
+        if (pageNumber > lastLoadedPage && status !== "Exhausted") {
+            loadMore(noticesPerPage);
+        }
         setCurrentPage(pageNumber);
     };
 
+    // 전체 페이지 수 계산 (Convex PaginatedQuery는 전체 개수를 미리 알기 어려우므로 
+    // 실제 서비스에서는 전체 개수를 리턴하는 별도 쿼리를 쓰거나, '다음' 버튼으로만 제어함)
+    // 여기서는 테스트를 위해 현재 로드된 기준으로 계산하거나 고정값 사용
+    const pageCount = Math.max(Math.ceil(results.length / noticesPerPage), 1);
+
     return (
-        // min-h-screen과 justify-center로 수직 중앙 정렬 기반 마련
         <div className="min-h-screen flex flex-col pt-10">
             <div className="w-full max-w-full mx-auto flex flex-col items-center gap-y-10 px-6 box-border">
-
-                {/* 제목 부분 */}
                 <header className="space-y-2 text-center box-border">
                     <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">공지사항</h1>
                     <p className="text-muted-foreground">새로운 소식과 업데이트를 확인하세요</p>
                 </header>
 
                 <div className="w-full bg-white dark:bg-transparent rounded-lg shadow-sm border p-4">
-                    {notices === undefined ? (
+                    {status === "LoadingFirstPage" ? (
                         <div className="py-20 text-center">로딩 중...</div>
-                    ) : notices.length === 0 ? (
+                    ) : results.length === 0 ? (
                         <div className="py-20 text-center text-muted-foreground">공지사항이 없습니다.</div>
                     ) : (
                         <>
                             <Table className="w-full">
-                                {/* TableCaption은 테이블 하단에 위치하므로 제거하거나 위치 조정 */}
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent">
                                         <TableHead className="w-[80px] text-center">번호</TableHead>
@@ -86,7 +108,8 @@ const Notice = () => {
                                     {paginatedNotices.map((notice, index) => (
                                         <TableRow key={notice._id} className="cursor-pointer transition-colors hover:bg-muted/50">
                                             <TableCell className="text-center text-muted-foreground">
-                                                {notices.length - (currentPage - 1) * noticesPerPage - index}
+                                                {/* 번호 계산 로직 (전체 개수를 모를 경우 index로 표시) */}
+                                                {results.length - (currentPage - 1) * noticesPerPage - index}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 <Link
@@ -105,7 +128,6 @@ const Notice = () => {
                                 </TableBody>
                             </Table>
 
-                            {/* 페이지네이션 */}
                             <div className="mt-8">
                                 <Pagination>
                                     <PaginationContent>
@@ -116,15 +138,7 @@ const Notice = () => {
                                             />
                                         </PaginationItem>
 
-                                        {/* 첫 페이지는 항상 표시 */}
-                                        {currentPage > 3 && (
-                                            <PaginationItem>
-                                                <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(1); }}>1</PaginationLink>
-                                            </PaginationItem>
-                                        )}
-                                        {currentPage > 4 && <PaginationItem><span className="px-2">...</span></PaginationItem>}
-
-                                        {/* 현재 페이지 주변 번호들만 렌더링 */}
+                                        {/* 슬라이딩 윈도우 UI 적용 */}
                                         {Array.from({ length: pageCount }, (_, i) => i + 1)
                                             .filter(page => page >= currentPage - 2 && page <= currentPage + 2)
                                             .map((page) => (
@@ -139,18 +153,19 @@ const Notice = () => {
                                                 </PaginationItem>
                                             ))}
 
-                                        {/* 마지막 페이지 안내 */}
-                                        {currentPage < pageCount - 3 && <PaginationItem><span className="px-2">...</span></PaginationItem>}
-                                        {currentPage < pageCount - 2 && (
-                                            <PaginationItem>
-                                                <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(pageCount); }}>{pageCount}</PaginationLink>
-                                            </PaginationItem>
-                                        )}
-
                                         <PaginationItem>
                                             <PaginationNext
                                                 href="#"
-                                                onClick={(e) => { e.preventDefault(); handlePageChange(Math.min(currentPage + 1, pageCount)); }}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    // 안전장치 추가
+                                                    // 더 이상 데이터가 없고(Exhausted) 현재가 마지막 로드된 페이지라면 이동 차단
+                                                    const lastLoadedPage = Math.ceil(results.length / noticesPerPage);
+                                                    if (status === "Exhausted" && currentPage >= lastLoadedPage) {
+                                                        return;
+                                                    }
+                                                    handlePageChange(currentPage + 1);
+                                                }}
                                             />
                                         </PaginationItem>
                                     </PaginationContent>
@@ -160,7 +175,6 @@ const Notice = () => {
                     )}
                 </div>
 
-                {/* 글쓰기 버튼 - 테이블 너비에 맞춰 정렬 */}
                 {userRole === 'admin' && (
                     <div className="flex justify-end w-full">
                         <Link href="/admin">

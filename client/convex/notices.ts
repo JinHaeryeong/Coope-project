@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { paginationOptsValidator } from "convex/server";
 
 
 //글쓰기로 notice 작성 후 게시 눌렀을 때
@@ -22,7 +23,25 @@ export const createNotice = mutation({
   },
 });
 
-//notices 테이블 불러옴
+/**
+ * [성능 최적화] 서버 측 커서 기반 페이지네이션 쿼리
+ * * @description
+ * 기존 collect() 방식은 모든 데이터를 읽어 전송하므로 데이터 증가 시 성능이 선형적으로 저하됩니다.
+ * 본 함수는 Cursor 기반 방식을 사용하여 필요한 데이터만 효율적으로 조회합니다.
+ * * - Cursor 방식: 마지막으로 읽은 데이터의 식별자를 기준으로 다음 n개만 조회 (O(1)에 가까운 성능)
+ * - 오프셋 방식 대비 대용량 데이터셋에서 압도적인 속도와 전송량 이점을 가짐
+ */
+export const getPaginated = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("notices")
+      .order("desc") // 최신순 정렬 (B-Tree 인덱스 활용)
+      .paginate(args.paginationOpts);
+  },
+});
+
+//notices 전체 불러옴 (비교를 위해 남겨둠)
 export const get = query(async (ctx) => {
   return await ctx.db.query("notices").collect();
 });
