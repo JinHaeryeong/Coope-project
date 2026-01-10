@@ -92,20 +92,6 @@ export default defineSchema({
     roomId: v.id("rooms"),
     userId: v.string(),
   }),
-  aiMessage: defineTable({
-    userId: v.string(),
-    role: v.union(v.literal("user"), v.literal("ai")),
-    text: v.string(),
-    createdAt: v.number(),
-  }).index("by_user", ["userId"]),
-  aichatMessages: defineTable({
-    userId: v.string(),
-    role: v.string(),
-    content: v.string(),
-    timestamp: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_timestamp", ["userId", "timestamp"]),
   workspaces: defineTable({
     name: v.string(),
     createdBy: v.string(),// userId

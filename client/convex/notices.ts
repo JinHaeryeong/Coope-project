@@ -5,28 +5,30 @@ import { Id } from "./_generated/dataModel";
 
 //글쓰기로 notice 작성 후 게시 눌렀을 때
 export const createNotice = mutation({
-  args:{ title: v.string(),
-  content: v.string(),
-  storageId: v.optional(v.id("_storage")),
-  author: v.string(),
-  fileFormat: v.optional(v.string()),
-  fileName: v.optional(v.string()),
-  authorId: v.string(),},
-  
+  args: {
+    title: v.string(),
+    content: v.string(),
+    storageId: v.optional(v.id("_storage")),
+    author: v.string(),
+    fileFormat: v.optional(v.string()),
+    fileName: v.optional(v.string()),
+    authorId: v.string(),
+  },
+
   handler: async (ctx, args) => {
     const { title, content, author, storageId, fileFormat, fileName, authorId } = args;
-    const notice = await ctx.db.insert("notices",{ title, content, author, file: storageId, fileFormat, fileName, authorId});
+    const notice = await ctx.db.insert("notices", { title, content, author, file: storageId, fileFormat, fileName, authorId });
     return notice;
   },
 });
 
 //notices 테이블 불러옴
 export const get = query(async (ctx) => {
-    return await ctx.db.query("notices").collect();
+  return await ctx.db.query("notices").collect();
 });
 
 export const getNoticeForComments = query({
-  args: {id: v.id("notices")},
+  args: { id: v.id("notices") },
   handler: async (ctx, args) => {
     const id = ctx.db.get(args.id);
     if (!id) {
@@ -48,12 +50,12 @@ export const getById = query({
     if (!notice) {
       return null;
     }
-    
+
     let fileUrl = null;
     if (notice.file) {
       fileUrl = await ctx.storage.getUrl(notice.file);
     }
-    
+
     return { ...notice, fileUrl };
   },
 });
@@ -72,8 +74,8 @@ export const updateNotice = mutation({
     fileFormat: v.optional(v.string()),
     fileName: v.optional(v.string()),
     storageId: v.optional(v.id("_storage")),
-   },
-   handler: async (ctx, args) => {
+  },
+  handler: async (ctx, args) => {
     if (!args.noticeId) {
       return null;
     }
@@ -82,13 +84,13 @@ export const updateNotice = mutation({
     if (!notice) {
       throw new Error("공지사항을 찾을 수 없습니다.");
     }
- 
-    if (notice.file && notice.file !==args.storageId) {
+
+    if (notice.file && notice.file !== args.storageId) {
       await ctx.storage.delete(notice.file);
     }
-    
-    await ctx.db.patch(args.noticeId, {title: args.title, content: args.content, file: args.storageId, fileName: args.fileName, fileFormat: args.fileFormat});
-   }
+
+    await ctx.db.patch(args.noticeId, { title: args.title, content: args.content, file: args.storageId, fileName: args.fileName, fileFormat: args.fileFormat });
+  }
 });
 
 //notice 삭제 && 달려있는 댓글 삭제
@@ -126,3 +128,19 @@ export const deleteNotice = mutation({
   },
 });
 
+// 테스트용
+export const seedNotices = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // 500개 정도로 늘려서 collect vs paginate의 차이보기
+    for (let i = 1; i <= 500; i++) {
+      await ctx.db.insert("notices", {
+        title: `[TEST] ${i}번째 공지사항 제목입니다.`,
+        content: `성능 테스트를 위한 본문 데이터입니다. `.repeat(10), // 본문 길이를 좀 늘려야 페이로드 차이가 잘보임
+        author: "관리자",
+        authorId: "admin_test_id",
+      });
+    }
+    return "대량 데이터 생성 완료!";
+  },
+});
