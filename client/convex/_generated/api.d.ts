@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as aiChat from "../aiChat.js";
 import type * as chat from "../chat.js";
 import type * as comments from "../comments.js";
 import type * as documents from "../documents.js";
@@ -27,7 +26,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  aiChat: typeof aiChat;
   chat: typeof chat;
   comments: typeof comments;
   documents: typeof documents;

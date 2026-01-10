@@ -107,33 +107,52 @@ const Notice = () => {
 
                             {/* 페이지네이션 */}
                             <div className="mt-8">
-                                <Pagination>
-                                    <PaginationContent>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            href="#"
+                                            onClick={(e) => { e.preventDefault(); handlePageChange(Math.max(currentPage - 1, 1)); }}
+                                        />
+                                    </PaginationItem>
+
+                                    {/* 첫 페이지는 항상 표시 */}
+                                    {currentPage > 3 && (
                                         <PaginationItem>
-                                            <PaginationPrevious
-                                                href="#"
-                                                onClick={(e) => { e.preventDefault(); handlePageChange(Math.max(currentPage - 1, 1)); }}
-                                            />
+                                            <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(1); }}>1</PaginationLink>
                                         </PaginationItem>
-                                        {Array.from({ length: pageCount }, (_, i) => (
-                                            <PaginationItem key={i}>
+                                    )}
+                                    {currentPage > 4 && <PaginationItem><span className="px-2">...</span></PaginationItem>}
+
+                                    {/* 현재 페이지 주변 번호들만 렌더링 */}
+                                    {Array.from({ length: pageCount }, (_, i) => i + 1)
+                                        .filter(page => page >= currentPage - 2 && page <= currentPage + 2)
+                                        .map((page) => (
+                                            <PaginationItem key={page}>
                                                 <PaginationLink
                                                     href="#"
-                                                    isActive={currentPage === i + 1}
-                                                    onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }}
+                                                    isActive={currentPage === page}
+                                                    onClick={(e) => { e.preventDefault(); handlePageChange(page); }}
                                                 >
-                                                    {i + 1}
+                                                    {page}
                                                 </PaginationLink>
                                             </PaginationItem>
                                         ))}
+
+                                    {/* 마지막 페이지 안내 */}
+                                    {currentPage < pageCount - 3 && <PaginationItem><span className="px-2">...</span></PaginationItem>}
+                                    {currentPage < pageCount - 2 && (
                                         <PaginationItem>
-                                            <PaginationNext
-                                                href="#"
-                                                onClick={(e) => { e.preventDefault(); handlePageChange(Math.min(currentPage + 1, pageCount)); }}
-                                            />
+                                            <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(pageCount); }}>{pageCount}</PaginationLink>
                                         </PaginationItem>
-                                    </PaginationContent>
-                                </Pagination>
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            href="#"
+                                            onClick={(e) => { e.preventDefault(); handlePageChange(Math.min(currentPage + 1, pageCount)); }}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
                             </div>
                         </>
                     )}
