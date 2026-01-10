@@ -11,6 +11,9 @@ export default defineSchema({
     author: v.string(),
     authorId: v.string()
   }).index("by_author", ["authorId"]),
+  notices_metadata: defineTable({
+    count: v.number() //공지사항 카운트용
+  }),
   comments: defineTable({
     content: v.string(),
     author: v.string(),

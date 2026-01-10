@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 // 핵심: usePaginatedQuery로 변경
-import { usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,9 @@ const formatDate = (timeStamp: string | number | Date) => {
 const Notice = () => {
     const noticesPerPage = 10;
 
+    // 추가 - 카운터 패턴을 이용한 전체 게시글 개수 가져오기
+    const totalCount = useQuery(api.notices.getTotalCount) ?? 0;
+
     // 서버 측 페이지네이션 쿼리 호출
     // results: 현재까지 로드된 데이터 리스트
     // status: 로딩 상태
@@ -56,7 +59,7 @@ const Notice = () => {
     const { user } = useUser();
     const userRole = user?.publicMetadata?.role;
 
-    // 2. 현재 페이지에 맞는 데이터를 보여주는 로직
+    // 현재 페이지에 맞는 데이터를 보여주는 로직
     // usePaginatedQuery는 데이터를 누적해서 가져오므로 slice가 필요함
     const paginatedNotices = results.slice(
         (currentPage - 1) * noticesPerPage,
@@ -78,7 +81,7 @@ const Notice = () => {
     // 전체 페이지 수 계산 (Convex PaginatedQuery는 전체 개수를 미리 알기 어려우므로 
     // 실제 서비스에서는 전체 개수를 리턴하는 별도 쿼리를 쓰거나, '다음' 버튼으로만 제어함)
     // 여기서는 테스트를 위해 현재 로드된 기준으로 계산하거나 고정값 사용
-    const pageCount = Math.max(Math.ceil(results.length / noticesPerPage), 1);
+    const pageCount = Math.max(Math.ceil(totalCount / noticesPerPage), 1);
 
     return (
         <div className="min-h-screen flex flex-col pt-10">

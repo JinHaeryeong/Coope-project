@@ -1,8 +1,33 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { paginationOptsValidator } from "convex/server";
 
+
+/**
+ * 카운터 패턴 - 공지사항 개수 관리 헬퍼 함수
+ * any 대신 MutationCtx 타입을 사용
+ */
+async function updateNoticeCount(ctx: MutationCtx, delta: number) {
+  const metadata = await ctx.db.query("notices_metadata").unique();
+  if (metadata) {
+    const newCount = Math.max(0, metadata.count + delta);
+    await ctx.db.patch(metadata._id, { count: newCount });
+  } else {
+    await ctx.db.insert("notices_metadata", { count: Math.max(0, delta) });
+  }
+}
+
+/**
+ * 성능 최적화 - 전체 개수 조회 쿼리
+ * O(1) 성능을 보장하며, any 대신 QueryCtx를 사용
+ */
+export const getTotalCount = query({
+  handler: async (ctx: QueryCtx) => {
+    const metadata = await ctx.db.query("notices_metadata").unique();
+    return metadata?.count ?? 0;
+  },
+});
 
 //글쓰기로 notice 작성 후 게시 눌렀을 때
 export const createNotice = mutation({
@@ -19,15 +44,21 @@ export const createNotice = mutation({
   handler: async (ctx, args) => {
     const { title, content, author, storageId, fileFormat, fileName, authorId } = args;
     const notice = await ctx.db.insert("notices", { title, content, author, file: storageId, fileFormat, fileName, authorId });
+
+    // 카운트 증가
+    await updateNoticeCount(ctx, 1);
     return notice;
   },
 });
 
+
+
+
 /**
- * [성능 최적화] 서버 측 커서 기반 페이지네이션 쿼리
+ * 성능 최적화 - 서버 측 커서 기반 페이지네이션 쿼리
  * * @description
- * 기존 collect() 방식은 모든 데이터를 읽어 전송하므로 데이터 증가 시 성능이 선형적으로 저하됩니다.
- * 본 함수는 Cursor 기반 방식을 사용하여 필요한 데이터만 효율적으로 조회합니다.
+ * 기존 collect() 방식은 모든 데이터를 읽어 전송하므로 데이터 증가 시 성능이 선형적으로 저하됨
+ * 본 함수는 Cursor 기반 방식을 사용하여 필요한 데이터만 효율적으로 조회
  * * - Cursor 방식: 마지막으로 읽은 데이터의 식별자를 기준으로 다음 n개만 조회 (O(1)에 가까운 성능)
  * - 오프셋 방식 대비 대용량 데이터셋에서 압도적인 속도와 전송량 이점을 가짐
  */
@@ -134,6 +165,9 @@ export const deleteNotice = mutation({
 
     // 게시글 삭제
     await ctx.db.delete(id);
+
+    // 카운트 감소
+    await updateNoticeCount(ctx, -1);
 
     // 댓글 삭제
     const comments = await ctx.db
