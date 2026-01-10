@@ -64,10 +64,13 @@ const Notice = () => {
     );
 
     // 3. 페이지 변경 핸들러 (데이터가 부족하면 서버에 더 요청)
-    const handlePageChange = async (pageNumber: number) => {
-        // 만약 가려는 페이지의 데이터가 아직 로드되지 않았다면 서버에서 더 불러옴
-        if (pageNumber > results.length / noticesPerPage && status !== "Exhausted") {
-            await loadMore(noticesPerPage);
+    const handlePageChange = (pageNumber: number) => {
+        // 현재 로드된 데이터 기준으로 마지막 페이지 계산
+        const lastLoadedPage = Math.ceil(results.length / noticesPerPage);
+
+        // 다음 페이지 데이터가 없으면 서버에서 더 가져옴
+        if (pageNumber > lastLoadedPage && status !== "Exhausted") {
+            loadMore(noticesPerPage);
         }
         setCurrentPage(pageNumber);
     };
@@ -75,7 +78,7 @@ const Notice = () => {
     // 전체 페이지 수 계산 (Convex PaginatedQuery는 전체 개수를 미리 알기 어려우므로 
     // 실제 서비스에서는 전체 개수를 리턴하는 별도 쿼리를 쓰거나, '다음' 버튼으로만 제어함)
     // 여기서는 테스트를 위해 현재 로드된 기준으로 계산하거나 고정값 사용
-    const pageCount = Math.max(Math.ceil(results.length / noticesPerPage), currentPage);
+    const pageCount = Math.max(Math.ceil(results.length / noticesPerPage), 1);
 
     return (
         <div className="min-h-screen flex flex-col pt-10">
@@ -153,9 +156,14 @@ const Notice = () => {
                                         <PaginationItem>
                                             <PaginationNext
                                                 href="#"
-                                                // status가 Exhausted가 아니면 더 불러올 수 있음
                                                 onClick={(e) => {
                                                     e.preventDefault();
+                                                    // 안전장치 추가
+                                                    // 더 이상 데이터가 없고(Exhausted) 현재가 마지막 로드된 페이지라면 이동 차단
+                                                    const lastLoadedPage = Math.ceil(results.length / noticesPerPage);
+                                                    if (status === "Exhausted" && currentPage >= lastLoadedPage) {
+                                                        return;
+                                                    }
                                                     handlePageChange(currentPage + 1);
                                                 }}
                                             />
