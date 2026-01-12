@@ -69,59 +69,80 @@ export const CommentList = ({ notice }: { notice: string }) => {
                 <>
                     {comments.map((comment) => (
                         <div key={comment._id} className="comment-box">
-                            <Avatar>
+                            <Avatar className="w-8 h-8 md:w-10 md:h-10 shrink-0">
                                 <AvatarImage src={comment.authorImgUrl} alt="프로필이미지" />
                                 <AvatarFallback>CN</AvatarFallback>
                             </Avatar>
-                            <div className="speech-bubble dark:bg-neutral-900">
-                                <div>{comment.author}</div>
-                                <div className="font-medium">{comment.content}</div>
-                                <div className="font-medium">{new Intl.DateTimeFormat('ko-KR', {
-                                    year: 'numeric',
-                                    month: '2-digit',
-                                    day: '2-digit',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    second: '2-digit',
-                                    hour12: true
-                                }).format(new Date(comment._creationTime))}</div>
-                                {comment.authorId === user?.id &&
-                                    <div className="text-right">
-                                        <Button variant="ghost" className="h-3" onClick={() => handleEditButtonClick(comment._id, comment.content)}>수정</Button>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="ghost" className="h-3">삭제</Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        삭제된 댓글은 복구되지 않습니다. 신중하게 생각하고 삭제해주세요.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>취소</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={(e) => handleDelete(comment._id, e)}>삭제</AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    </div>}
-                                {
-                                    //commentIdToEdit과 comment._id가 같을 때만 나타나게 하지않으면 모든 댓글 밑에 수정 칸이 나타날 수 있을 것 같아서 이렇게 했습니다.
-                                    commentIdToEdit === comment._id && (
-                                        <form onSubmit={handleCommentEdit} className="flex gap-2 w-full h-32" >
-                                            <textarea
-                                                name="content"
-                                                value={commentEdit}
-                                                onChange={editComment}
-                                                placeholder="수정할 댓글 내용을 입력해주세요"
-                                                required
-                                                className="h-full w-full comment-textarea"
-                                                maxLength={200}
-                                            />
-                                            <Button type="submit" className="h-full">등록</Button>
-                                        </form>
+                            <div className="speech-bubble dark:bg-neutral-900 flex-1">
+                                {/* 헤더 부분: 이름, 날짜, 수정/삭제 버튼 */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                                    <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+                                        <div className="font-bold text-sm md:text-base">{comment.author}</div>
+                                        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
+                                        <div className="text-[10px] md:text-sm text-slate-500 font-light dark:text-slate-400">
+                                            {new Intl.DateTimeFormat('ko-KR', {
+                                                year: '2-digit',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            }).format(new Date(comment._creationTime))}
+                                        </div>
+                                    </div>
+
+                                    {/* 버튼 영역: 터치 영역 확보 */}
+                                    {comment.authorId === user?.id && (
+                                        <div className="flex gap-1 justify-end">
+                                            <Button
+                                                variant="ghost"
+                                                className="h-6 px-2 text-[10px] md:text-sm"
+                                                onClick={() => handleEditButtonClick(comment._id, comment.content)}
+                                            >
+                                                수정
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" className="h-6 px-2 text-[10px] md:text-sm">삭제</Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="w-[90vw] max-w-md rounded-lg">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>댓글 삭제</AlertDialogTitle>
+                                                        <AlertDialogDescription>삭제된 댓글은 복구되지 않습니다.</AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>취son</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={(e) => handleDelete(comment._id, e)}>삭제</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
                                     )}
+                                </div>
+                                <div className="font-medium mt-2">{comment.content}</div>
+
+                                {commentIdToEdit === comment._id && (
+                                    <form onSubmit={handleCommentEdit} className="flex flex-col gap-2 mt-4 w-full">
+                                        <textarea
+                                            name="content"
+                                            value={commentEdit}
+                                            onChange={editComment}
+                                            placeholder="수정할 댓글 내용을 입력해주세요"
+                                            required
+                                            className="min-h-[100px] w-full comment-textarea"
+                                            maxLength={200}
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setCommentIdToEdit(null)}
+                                            >
+                                                취소
+                                            </Button>
+                                            <Button type="submit">등록</Button>
+                                        </div>
+                                    </form>
+                                )}
                             </div>
 
                         </div>

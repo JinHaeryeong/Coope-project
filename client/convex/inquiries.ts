@@ -1,17 +1,23 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
 
-//문의 내역 출력시
+//문의 내역 출력 (통합 버전)
 export const get = query({
     args: { userId: v.optional(v.string()) },
     handler: async (ctx, args) => {
+        // 관리자용: userId 인자가 없으면 전체 내역을 최신순으로 가져옴
         if (!args.userId) {
-            return [];
+            return await ctx.db
+                .query("inquiryDetails")
+                .order("desc") // 최신순 정렬 추가
+                .collect();
         }
-        else {
-            return await ctx.db.query("inquiryDetails").filter((q) => q.eq(q.field("userId"), args.userId)).collect()
-        };
+
+        // 일반 유저용: userId가 있으면 본인 것만 필터링해서 가져옴
+        return await ctx.db
+            .query("inquiryDetails")
+            .filter((q) => q.eq(q.field("userId"), args.userId))
+            .collect();
     }
 });
 
@@ -145,13 +151,15 @@ export const answerInquiry = mutation({
 
 //문의 답변 리스트
 export const listAnswer = query({
-    args: {
-        id: v.string()
-    },
+    args: { id: v.string() },
     handler: async (ctx, args) => {
-        const answers = await ctx.db.query("inquiryAnswer").filter((q) => q.eq(q.field("postId"), args.id)).order("desc").collect();
+        const answers = await ctx.db
+            .query("inquiryAnswer")
+            .filter((q) => q.eq(q.field("postId"), args.id))
+            .collect();
 
-        return answers;
+        // 최신순으로 정렬해서 반환
+        return answers.sort((a, b) => b._creationTime - a._creationTime);
     }
 });
 

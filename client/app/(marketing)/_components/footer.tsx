@@ -22,7 +22,7 @@ export const Footer = () => {
 
     return (
         <div className={cn(
-            "flex items-center w-full p-3 bg-background z-50 dark:bg-[#1F1F1F] rounded-t-2xl",
+            "flex items-center w-full p-3 bg-background z-49 dark:bg-[#1F1F1F] rounded-t-2xl",
             // 조건부 클래스 할당
             isMainPage ? "fixed bottom-0" : "relative mt-auto"
             // 'relative mt-auto'를 쓰면 전체 레이아웃 바닥에 자연스럽게 붙습니다.

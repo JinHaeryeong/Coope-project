@@ -43,7 +43,7 @@ export const createNotice = mutation({
 
   handler: async (ctx, args) => {
     const { title, content, author, storageId, fileFormat, fileName, authorId } = args;
-    const notice = await ctx.db.insert("notices", { title, content, author, file: storageId, fileFormat, fileName, authorId });
+    const notice = await ctx.db.insert("notices", { title, content, author, file: storageId, fileFormat, fileName, authorId, views: 0 });
 
     // 카운트 증가
     await updateNoticeCount(ctx, 1);
@@ -51,8 +51,18 @@ export const createNotice = mutation({
   },
 });
 
-
-
+// 조회수 증가
+export const incrementViews = mutation({
+  args: { id: v.id("notices") },
+  handler: async (ctx, args) => {
+    const notice = await ctx.db.get(args.id);
+    if (notice) {
+      await ctx.db.patch(args.id, {
+        views: (notice.views ?? 0) + 1
+      });
+    }
+  },
+});
 
 /**
  * 성능 최적화 - 서버 측 커서 기반 페이지네이션 쿼리
@@ -192,8 +202,10 @@ export const seedNotices = mutation({
         content: `성능 테스트를 위한 본문 데이터입니다. `.repeat(10), // 본문 길이를 좀 늘려야 페이로드 차이가 잘보임
         author: "관리자",
         authorId: "admin_test_id",
+        views: 0
       });
     }
     return "대량 데이터 생성 완료!";
   },
 });
+
