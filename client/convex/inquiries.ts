@@ -21,10 +21,6 @@ export const get = query({
     }
 });
 
-//관리자에게 출력되는 문의 내역
-export const getInquiries = query(async (ctx) => {
-    return await ctx.db.query("inquiryDetails").collect();
-});
 
 //문의 제출할 때
 export const createInquiry = mutation({

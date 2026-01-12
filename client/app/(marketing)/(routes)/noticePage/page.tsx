@@ -38,6 +38,8 @@ const NoticePageContent = () => {
             localStorage.setItem(`viewed_time_${noticeId}`, now.toString());
         }
     }, [noticeId, incrementViews]);
+    // incrementViews 함수는 useMutation으로 가져온 거라 값이 변하지 않는 안정적인 함수 => 의존성 배열에서 빼줘도 문제없고, 성능상 더 깔끔
+    // 였는ㄴ데 코파일럿은 빼랬는데 ESLint는 넣으라함; 리액트스러움 유지를 위해 다시 넣기로 어차피 무한루프는 안생김
 
     if (!noticeId) { //null 체크, 없어도 사이트 자체는 돌아가지만 IDE에서는 계속 오류라고 표시됨
         return <p>공지사항 ID가 유효하지 않습니다.</p>

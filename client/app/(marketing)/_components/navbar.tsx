@@ -81,6 +81,8 @@ export const Navbar = () => {
             </div>
 
             {/* 모바일 메뉴 오버레이 및 리스트 */}
+            {/* 모바일 메뉴를 닫기 위한 오버레이(검은 배경)에 클릭 이벤트만 있고 키보드 사용자를 위한 배려가 없다는 지적을 코파일럿에게 받음
+            시각 장애인이 키보드로 조작할 때도 메뉴를 닫을 수 있게 속성을 추가 */}
             {isMobileMenuOpen && (
                 <>
                     {/* 오버레이 (배경 어둡게) - 상단바(z-60)보다 낮은 z-40으로 설정 */}
@@ -88,6 +90,13 @@ export const Navbar = () => {
                         className="fixed inset-0 bg-black/40 md:hidden"
                         style={{ zIndex: 40 }}
                         onClick={toggleMobileMenu}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+                                toggleMobileMenu();
+                            }
+                        }}
                     />
 
                     {/* 드롭다운 메뉴 - 상단바 바로 아래 위치 */}

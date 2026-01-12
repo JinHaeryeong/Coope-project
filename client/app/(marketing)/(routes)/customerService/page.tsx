@@ -52,12 +52,14 @@ const CustomerService = () => {
 
     // 권한 및 사용자 정보
     const userRole = user?.publicMetadata?.role;
-    const isAdmin = userRole === "admin";
+    const isAdmin = isAuthenticated && userRole === "admin"; // isAuthenticated 안해주면 로그인 안한 유저도 관리자 권한이라 리스트가 보임..
 
     // 데이터 페칭 (통합)
     const inquiries = useQuery(
         api.inquiries.get,
-        isAdmin ? {} : { userId: user?.id }
+        isAuthenticated
+            ? (isAdmin ? {} : { userId: user?.id })
+            : "skip" // 로그인이 안 되었을 때는 "skip"을 넘기거나 쿼리 자체를 안 타게 함
     );
 
     // 데이터 정렬 및 가공

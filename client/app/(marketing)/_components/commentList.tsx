@@ -110,7 +110,7 @@ export const CommentList = ({ notice }: { notice: string }) => {
                                                         <AlertDialogDescription>삭제된 댓글은 복구되지 않습니다.</AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
-                                                        <AlertDialogCancel>취son</AlertDialogCancel>
+                                                        <AlertDialogCancel>취소</AlertDialogCancel>
                                                         <AlertDialogAction onClick={(e) => handleDelete(comment._id, e)}>삭제</AlertDialogAction>
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
