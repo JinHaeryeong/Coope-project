@@ -9,7 +9,8 @@ export default defineSchema({
     fileFormat: v.optional(v.string()),
     fileName: v.optional(v.string()),
     author: v.string(),
-    authorId: v.string()
+    authorId: v.string(),
+    views: v.number(),
   }).index("by_author", ["authorId"]),
   notices_metadata: defineTable({
     count: v.number() //공지사항 카운트용
