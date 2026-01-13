@@ -1,18 +1,20 @@
 'use client';
-
+import dynamic from "next/dynamic";
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useConvexAuth } from 'convex/react';
 
 import { Spinner } from '@/components/spinner';
 import { Navigation } from './_components/navigation';
-import { SearchCommand } from '@/components/search-command';
 import { Button } from '@/components/ui/button';
 import { Ghost } from 'lucide-react';
-import { AIChatModal } from '@/components/ai-chat-modal';
 import { ChatProvider } from '@/components/chat-context';
 import { EdgeStoreProvider } from '@/lib/edgestore';
-import { ModalProvider } from '@/components/providers/modal-provider';
+
+
+const DynamicAIChatModal = dynamic(() => import("@/components/ai-chat-modal").then(m => m.AIChatModal), { ssr: false });
+const DynamicSearchCommand = dynamic(() => import("@/components/search-command").then(m => m.SearchCommand), { ssr: false });
+const DynamicModalProvider = dynamic(() => import("@/components/providers/modal-provider").then(m => m.ModalProvider), { ssr: false });
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -38,7 +40,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <EdgeStoreProvider>
-      <ModalProvider />
+      <DynamicModalProvider />
       <ChatProvider>
         <div className="h-full flex dark:bg-[#1F1F1F]">
           {/* 채팅 버튼 */}
@@ -51,14 +53,19 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <Ghost />
             </Button>
           )}
-          <AIChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+          {isChatOpen && (
+            <DynamicAIChatModal
+              isOpen={isChatOpen}
+              onClose={() => setIsChatOpen(false)}
+            />
+          )}
 
           {/* 사이드바 */}
           <Navigation />
 
           {/* 콘텐츠 영역 */}
           <main className="flex-1 h-full overflow-y-auto">
-            <SearchCommand />
+            <DynamicSearchCommand />
             {children}
           </main>
 

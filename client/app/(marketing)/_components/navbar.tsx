@@ -3,14 +3,20 @@
 import { useScrollTop } from "@/hooks/use-scroll-top";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
-import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
 import { Spinner } from "@/components/spinner";
-import { SignInButton, UserButton } from '@clerk/clerk-react';
 import { useConvexAuth } from "convex/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react"; // X 아이콘 추가해서 닫기 버튼 시각화
+import dynamic from "next/dynamic";
+
+const SignInButton = dynamic(() => import("@clerk/clerk-react").then(mod => mod.SignInButton), { ssr: false });
+const UserButton = dynamic(() => import("@clerk/clerk-react").then(mod => mod.UserButton), { ssr: false });
+const ModeToggle = dynamic(() => import("@/components/mode-toggle").then(mod => mod.ModeToggle), {
+    ssr: false,
+    loading: () => <div className="h-9 w-9 bg-gray-200 animate-pulse rounded-md" /> // 로딩 중 스켈레톤
+});
 
 const Links = [
     { href: "/notice", text: '공지사항' },

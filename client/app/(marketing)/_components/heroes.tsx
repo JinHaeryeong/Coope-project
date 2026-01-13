@@ -12,10 +12,10 @@ export const Heroes = () => {
                         fill
                         priority
                         fetchPriority="high"
-                        sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
+                        sizes="(max-width: 640px) 200px, (max-width: 768px) 300px, 400px"
                         className="object-contain dark:hidden"
                         alt="Documents"
-                        quality={75}
+                        quality={70}
                     />
                     <Image
                         src="/documents-dark.webp"
@@ -31,7 +31,6 @@ export const Heroes = () => {
                         src="/reading.webp"
                         fill
                         priority
-                        fetchPriority="high"
                         sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                         className="object-contain dark:hidden"
                         alt="Reading"

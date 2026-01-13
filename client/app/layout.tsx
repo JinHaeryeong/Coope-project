@@ -3,14 +3,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
-import localFont from 'next/font/local'
-const pretendard = localFont({
-  src: "../public/fonts/PretendardVariable.woff2",
-  display: "swap",
-  weight: "45 920",
-  variable: "--font-pretendard"
-});
-
 
 export const metadata: Metadata = {
   title: "coope",
@@ -18,12 +10,12 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        media: "(prefers-color-scheme: light",
+        media: "(prefers-color-scheme: light)",
         url: "/logo.webp",
         href: "/logo.webp",
       },
       {
-        media: "(prefers-color-schem: dark",
+        media: "(prefers-color-scheme: dark)",
         url: "/logo-dark.webp",
         href: "/logo-dark.webp",
       }
@@ -38,8 +30,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${pretendard.variable} font-sans`}
-      >
+      <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://renewed-pipefish-31.clerk.accounts.dev" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          as="style"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className="font-sans">
         <ConvexClientProvider>
           <ThemeProvider
             attribute="class"

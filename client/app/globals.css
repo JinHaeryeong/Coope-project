@@ -2,9 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --font-pretendard: "Pretendard Variable";
+}
 html,
 body {
     height: 100%;
+    font-family:
+        var(--font-pretendard),
+        -apple-system,
+        BlinkMacSystemFont,
+        system-ui,
+        Roboto,
+        sans-serif;
 }
 
 @layer base {

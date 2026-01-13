@@ -83,5 +83,10 @@
     "overrides": {
         "@types/react": "19.0.12",
         "@types/react-dom": "19.0.4"
-    }
+    },
+    "browserslist": [
+        "last 2 versions",
+        "> 0.5%",
+        "not dead"
+    ]
 }

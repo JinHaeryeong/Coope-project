@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { usePathname } from "next/navigation" // 경로 파악을 위한 훅 추가
 import { cn } from "@/lib/utils" // Shadcn UI를 쓰신다면 보통 있는 클래스 합치기 유틸
-import Modal from "./modal";
-import Policy from "./policy";
-import Terms from "./term";
+import dynamic from "next/dynamic"
+
+const DynamicPolicy = dynamic(() => import("./policy"), { ssr: false });
+const DynamicTerms = dynamic(() => import("./term"), { ssr: false });
+const DynamicModal = dynamic(() => import("./modal"), { ssr: false });
 
 export const Footer = () => {
     const pathname = usePathname(); // 현재 경로 가져오기
@@ -31,15 +33,19 @@ export const Footer = () => {
                 <Button variant="ghost" size="sm" onClick={openPrivacyModal}>
                     개인정보정책
                 </Button>
-                <Modal isOpen={isPrivacyModalOpen} onClose={closePrivacyModal} title="개인정보 정책">
-                    <Policy />
-                </Modal>
+                {isPrivacyModalOpen && (
+                    <DynamicModal isOpen={isPrivacyModalOpen} onClose={closePrivacyModal} title="개인정보 정책">
+                        <DynamicPolicy />
+                    </DynamicModal>
+                )}
                 <Button variant="ghost" size="sm" onClick={openTermsModal}>
                     이용약관
                 </Button>
-                <Modal isOpen={isTermsModalOpen} onClose={closeTermsModal} title="이용약관">
-                    <Terms />
-                </Modal>
+                {isTermsModalOpen && (
+                    <DynamicModal isOpen={isTermsModalOpen} onClose={closeTermsModal} title="이용약관">
+                        <DynamicTerms />
+                    </DynamicModal>
+                )}
             </div>
         </div>
     )
