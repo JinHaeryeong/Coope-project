@@ -3,14 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
-import localFont from 'next/font/local'
-const pretendard = localFont({
-  src: "../public/fonts/PretendardVariable.woff2",
-  display: "swap",
-  weight: "45 920",
-  variable: "--font-pretendard"
-});
-
+import { preconnect, preload } from "react-dom";
 
 export const metadata: Metadata = {
   title: "coope",
@@ -18,14 +11,14 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        media: "(prefers-color-scheme: light",
-        url: "/logo.png",
-        href: "/logo.png",
+        media: "(prefers-color-scheme: light)",
+        url: "/logo.webp",
+        href: "/logo.webp",
       },
       {
-        media: "(prefers-color-schem: dark",
-        url: "/logo-dark.png",
-        href: "/logo-dark.png",
+        media: "(prefers-color-scheme: dark)",
+        url: "/logo-dark.webp",
+        href: "/logo-dark.webp",
       }
     ]
   }
@@ -36,10 +29,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  preconnect("https://cdn.jsdelivr.net", { crossOrigin: "anonymous" });
+  preconnect("https://renewed-pipefish-31.clerk.accounts.dev", { crossOrigin: "anonymous" });
+  preload(
+    "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css",
+    { as: "style", crossOrigin: "anonymous" }
+  );
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${pretendard.variable} font-sans`}
-      >
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className="font-sans">
         <ConvexClientProvider>
           <ThemeProvider
             attribute="class"

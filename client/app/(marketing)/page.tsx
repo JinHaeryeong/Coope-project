@@ -1,17 +1,5 @@
-
-import dynamic from "next/dynamic";
-
-
-const DynamicHeading = dynamic(() => import("./_components/heading").then(m => m.Heading), {
-  loading: () => <div className="h-44 w-full animate-pulse bg-slate-100 rounded-lg" />
-});
-
-const DynamicHeroes = dynamic(() => import("./_components/heroes").then(m => m.Heroes), {
-  ssr: true,
-  loading: () => <div className="h-[400px] w-full max-w-5xl flex items-center justify-center mx-auto">
-    <div className="animate-pulse bg-slate-200 h-full w-full rounded-lg" />
-  </div>
-});
+import { Heading } from "./_components/heading"; // 직접 임포트!
+import { Heroes } from "./_components/heroes";   // 직접 임포트!
 
 const MarketingPage = () => {
 
@@ -19,12 +7,14 @@ const MarketingPage = () => {
     <div className="min-h-full flex flex-col">
       <div className="flex flex-col items-center justify-center
       md:justify-start text-center gap-y-8 flex-1 px-6 pb-10 pt-20">
-        <DynamicHeading />
-        <DynamicHeroes />
-        <div className="ocean">
-          <div className="wave"></div>
-          <div className="wave"></div>
-          <div className="wave"></div>
+        <Heading />
+        <Heroes />
+        <div className="hidden md:block">
+          <div className="ocean">
+            <div className="wave"></div>
+            <div className="wave"></div>
+            <div className="wave"></div>
+          </div>
         </div>
       </div>
     </div>
