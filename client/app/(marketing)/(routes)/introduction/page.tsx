@@ -34,9 +34,9 @@ const Introduction = () => {
     };
 
     const teamMembers = [
-        { id: 1, name: '김민재', role: '풀스택 개발', content: '팀 안전운전의 김민재입니다. 팀원 소개글의 1번입니다.' },
-        { id: 2, name: '문제창', role: '풀스택 개발', content: '팀 안전운전의 문제창입니다. 팀원 소개글의 2번입니다.' },
-        { id: 3, name: '진해령', role: '풀스택 개발', content: '팀 안전운전의 진해령입니다. 팀원 소개글의 3번입니다.' },
+        { id: 1, name: '김민재', role: '풀스택 개발', content: '팀 안전운전의 김민재입니다. 팀원 소개글의 1번입니다.', pic: '', git: 'https://github.com/codecodecode333' },
+        { id: 2, name: '문제창', role: '풀스택 개발', content: '팀 안전운전의 문제창입니다. 팀원 소개글의 2번입니다.', pic: '', git: 'https://github.com/caiper007' },
+        { id: 3, name: '진해령', role: '풀스택 개발', content: '팀 안전운전의 진해령입니다. 팀원 소개글의 3번입니다.', pic: '', git: 'https://github.com/JinHaeryeong' },
     ];
 
     useEffect(() => {
@@ -57,21 +57,18 @@ const Introduction = () => {
 
     return (
         <div className="min-h-screen pt-10 md:pt-20 overflow-x-hidden">
-            <div className="flex flex-col items-center gap-y-8 px-4 md:px-6 pb-20">
+            <div className="flex flex-col items-center gap-y-8 pb-20">
                 <div className="w-full max-w-[900px]">
                     <Image
-                        src={"/introduction.png"}
+                        src={"/introduction.webp"}
                         width={900}
                         height={300}
                         alt="사람"
                         priority
-                        className="w-full"
+                        unoptimized
                     />
                 </div>
-
                 <div className="w-full px-10 md:px-40 flex flex-col">
-                    <h2 className="text-right text-blue-500 pb-6 md:pb-10 text-xs md:text-sm">Designed by Freepik</h2>
-
                     <div ref={target} className="hidden-box">
                         <h2 className="text-3xl md:text-5xl font-bold leading-tight">
                             <span className="text-blue-500">함께</span> 알아가고<br />
@@ -145,9 +142,20 @@ const Introduction = () => {
                         {/* 팀원 섹션 */}
                         <div className="relative mt-24 md:mt-32 w-full">
                             <h2 className="text-3xl md:text-4xl font-bold mb-10 text-center md:text-start">팀원</h2>
+
                             {/* 데스크탑용 파란 줄: md 이상에서만 보이고 전체를 가로지름 */}
-                            <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-40 bg-blue-500/10 blur-[100px] pointer-events-none -rotate-3" />
-                            <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-28 bg-blue-600/20 skew-y-[-2deg] pointer-events-none border-y border-blue-400/10" />
+                            <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-64 pointer-events-none -rotate-2 z-0">
+                                <Image
+                                    src="/paint1.webp"
+                                    fill
+                                    className="object-cover opacity-95 dark:opacity-50 mix-blend-multiply dark:mix-blend-screen"
+                                    sizes="100vw"
+                                    alt="brush background"
+                                    unoptimized
+                                />
+                            </div>
+                            {/* 뒤에 아주 옅은 글로우 효과만 (붓질을 돋보이게) */}
+                            <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-40 bg-blue-500/5 blur-[100px] pointer-events-none -z-10" />
 
                             <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-20 md:gap-10 justify-items-center pb-20 md:pb-40">
                                 {teamMembers.map((member) => (
@@ -177,7 +185,7 @@ const Introduction = () => {
                                         </div>
                                         <div className="flex flex-row space-x-6 mt-auto mb-8">
                                             <Link href="#" className="hover:scale-125 transition-transform"><MailOpen size={24} /></Link>
-                                            <Link href="#" className="hover:scale-125 transition-transform"><Github size={24} /></Link>
+                                            <Link href={member.git} className="hover:scale-125 transition-transform"><Github size={24} /></Link>
                                         </div>
                                     </div>
                                 ))}

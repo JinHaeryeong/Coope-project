@@ -37,12 +37,15 @@ const Support = () => {
             <MailOpen /> 자주 묻는 질문
           </Button>
           <div className="flex items-center">
-            <div className="relative w-[300px] h-[300px] md:w-[600px] md:h-[600px]">
+            <div className="relative w-[350px] h-[350px] md:w-[600px] md:h-[600px]">
               {/* 이미지 dark 모드일때거 필요함 */}
               <Image
-                src="/support1.png"
+                src="/support1.webp"
                 fill
+                priority
+                unoptimized
                 className="object-contain"
+                sizes="(max-width: 768px) 350px, 600px"
                 alt="자주묻는질문"
               />
             </div>
