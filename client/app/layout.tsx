@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
+import { preconnect, preload } from "react-dom";
 
 export const metadata: Metadata = {
   title: "coope",
@@ -28,17 +29,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  preconnect("https://cdn.jsdelivr.net", { crossOrigin: "anonymous" });
+  preconnect("https://renewed-pipefish-31.clerk.accounts.dev", { crossOrigin: "anonymous" });
+  preload(
+    "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css",
+    { as: "style", crossOrigin: "anonymous" }
+  );
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://renewed-pipefish-31.clerk.accounts.dev" crossOrigin="anonymous" />
-        <link
-          rel="preload"
-          as="style"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-          crossOrigin="anonymous"
-        />
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
