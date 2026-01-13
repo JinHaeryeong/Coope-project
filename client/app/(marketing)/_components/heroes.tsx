@@ -11,6 +11,7 @@ export const Heroes = () => {
                         src="/documents.webp"
                         fill
                         priority
+                        fetchPriority="high"
                         sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                         className="object-contain dark:hidden"
                         alt="Documents"
@@ -30,6 +31,7 @@ export const Heroes = () => {
                         src="/reading.webp"
                         fill
                         priority
+                        fetchPriority="high"
                         sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                         className="object-contain dark:hidden"
                         alt="Reading"
