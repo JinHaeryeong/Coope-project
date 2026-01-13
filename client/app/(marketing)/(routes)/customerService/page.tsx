@@ -11,7 +11,6 @@ import {
     Clock,
     ChevronRight,
     Search,
-    PlusCircle
 } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
@@ -46,7 +45,7 @@ const formatDate = (timeStamp: number) => {
 const CustomerService = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const noticesPerPage = 10;
-    const { isAuthenticated } = useConvexAuth();
+    const { isAuthenticated, isLoading: authLoading } = useConvexAuth(); // authLoading 추가
     const { user } = useUser();
     const router = useRouter();
 
@@ -101,20 +100,36 @@ const CustomerService = () => {
                             ? "접수된 사용자 문의를 확인하고 답변을 관리하는 관리자 전용 공간입니다."
                             : "Coope 서비스 이용 중 발생한 불편사항이나 궁금한 점을 확인하세요."}
                     </p>
-                    <div className="inline-flex items-center justify-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-2">
-                        <Search className="w-5 h-5 text-blue-600 mr-2" />
-                        <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Support Center</span>
-                    </div>
                 </header>
 
                 {/* 메인 리스트 카드 */}
                 <div className="w-full bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    {inquiries === undefined ? (
+                    {authLoading ? (
+                        /* 클러크/컨벡스 인증 정보 자체를 불러오는 중일 때 */
                         <div className="py-32 text-center animate-pulse flex flex-col items-center gap-4">
                             <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full" />
-                            <p className="text-slate-400 font-medium text-lg">데이터 로딩 중...</p>
+                            <p className="text-slate-400 font-medium">인증 확인 중...</p>
+                        </div>
+                    ) : !isAuthenticated ? (
+                        /* 로그인이 안 되어 있을 때 (뺑글이 대신 안내 문구 노출) */
+                        <div className="py-32 text-center flex flex-col items-center gap-6">
+                            <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-full">
+                                <Search className="w-8 h-8 text-slate-400" />
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-slate-600 dark:text-slate-300 text-lg font-bold">로그인이 필요합니다</p>
+                                <p className="text-slate-500 text-sm">문의 내역을 확인하려면 먼저 로그인해 주세요.</p>
+                            </div>
+                            <Button onClick={() => router.push("/")} variant="outline">메인으로 가기</Button>
+                        </div>
+                    ) : inquiries === undefined ? (
+                        /* 로그인 상태인데 아직 DB에서 데이터를 가져오는 중일 때 */
+                        <div className="py-32 text-center animate-pulse flex flex-col items-center gap-4">
+                            <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                            <p className="text-slate-400 font-medium text-lg">문의 내역 불러오는 중...</p>
                         </div>
                     ) : inquiries.length === 0 ? (
+                        /* 데이터 조회가 끝났는데 내역이 0개일 때 */
                         <div className="py-32 text-center flex flex-col items-center gap-4">
                             <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-full">
                                 <Clock className="w-8 h-8 text-slate-400" />
@@ -183,11 +198,11 @@ const CustomerService = () => {
                                             {/* 데스크탑: 상태 배지 (모두 확인 가능) */}
                                             <TableCell className="hidden md:table-cell text-center">
                                                 {inquiry.responseStatus ? (
-                                                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold ring-1 ring-inset ring-blue-700/10">
+                                                    <div className="inline-flex items-center px-3 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold ring-1 ring-inset ring-blue-700/10">
                                                         <CheckCircle2 className="w-3 h-3 mr-1.5" /> 답변완료
                                                     </div>
                                                 ) : (
-                                                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold ring-1 ring-inset ring-slate-500/10">
+                                                    <div className="inline-flex items-center px-3 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold ring-1 ring-inset ring-slate-500/10">
                                                         <Clock className="w-3 h-3 mr-1.5" /> 답변대기
                                                     </div>
                                                 )}
@@ -250,10 +265,9 @@ const CustomerService = () => {
                         <Button
                             onClick={handleInquiryButton}
                             size="lg"
-                            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 dark:shadow-none px-8 py-6 rounded-xl transition-all hover:scale-105 active:scale-95"
+                            className="text-white shadow-lg shadow-slate-300 dark:shadow-none px-8 py-6 rounded-md transition-all hover:scale-105 active:scale-95"
                         >
-                            <PlusCircle className="w-5 h-5 mr-2" />
-                            새로운 문의 작성
+                            문의 작성
                         </Button>
                     </div>
                 )}

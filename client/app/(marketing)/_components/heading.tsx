@@ -18,7 +18,7 @@ export const Heading = () => {
   const isLoading = authLoading || workspaceLoading;
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="max-w-3xl space-y-4 min-h-44">
       <h3 className="text-base sm:text-xl md:text-2xl font-medium">
         협업을 새롭게 정의하다
       </h3>
@@ -26,28 +26,27 @@ export const Heading = () => {
       <div className="sm:w-full w-full">
         <Logo />
       </div>
-
-      {isLoading && (
-        <div className="w-full flex items-center justify-center">
+      <div className="h-12 w-full flex items-center justify-center">
+        {isLoading ? (
           <Spinner size="lg" />
-        </div>
-      )}
-
-      {isAuthenticated && !isLoading && (
-        <Button onClick={onEnter}>
-          시작하기
-          <ArrowRight className="h-4 w-4 ml-2" />
-        </Button>
-      )}
-
-      {!isAuthenticated && !isLoading && (
-        <SignInButton mode="modal">
-          <Button>
-            Get Coope free
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </SignInButton>
-      )}
+        ) : (
+          <>
+            {isAuthenticated ? (
+              <Button onClick={onEnter} size="lg">
+                시작하기
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            ) : (
+              <SignInButton mode="modal">
+                <Button size="lg">
+                  시작하기
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </SignInButton>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
