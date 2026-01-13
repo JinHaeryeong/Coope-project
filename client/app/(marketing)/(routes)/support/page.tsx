@@ -43,7 +43,6 @@ const Support = () => {
                 src="/support1.webp"
                 fill
                 priority
-                unoptimized
                 className="object-contain"
                 sizes="(max-width: 768px) 350px, 600px"
                 alt="자주묻는질문"

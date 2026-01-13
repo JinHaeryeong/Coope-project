@@ -11,7 +11,6 @@ export const Heroes = () => {
                         src="/documents.webp"
                         fill
                         priority
-                        unoptimized
                         sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                         className="object-contain dark:hidden"
                         alt="Documents"
@@ -20,7 +19,6 @@ export const Heroes = () => {
                     <Image
                         src="/documents-dark.webp"
                         fill
-                        unoptimized
                         className="object-contain hidden dark:block"
                         sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                         alt="Documents"
@@ -32,7 +30,6 @@ export const Heroes = () => {
                         src="/reading.webp"
                         fill
                         priority
-                        unoptimized
                         sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                         className="object-contain dark:hidden"
                         alt="Reading"
@@ -40,7 +37,6 @@ export const Heroes = () => {
                     <Image
                         src="/reading-dark.webp"
                         fill
-                        unoptimized
                         className="object-contain hidden dark:block"
                         sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                         alt="Reading"
