@@ -148,7 +148,7 @@ const Introduction = () => {
                                     src="/paint1.webp"
                                     fill
                                     priority
-                                    className="object-cover opacity-95 dark:opacity-50 mix-blend-multiply dark:mix-blend-screen"
+                                    className="hidden md:block object-cover opacity-95 dark:opacity-50 mix-blend-multiply dark:mix-blend-screen"
                                     sizes="100vw"
                                     alt="brush background"
                                 />

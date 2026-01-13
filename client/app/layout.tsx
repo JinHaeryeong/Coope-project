@@ -19,13 +19,13 @@ export const metadata: Metadata = {
     icon: [
       {
         media: "(prefers-color-scheme: light",
-        url: "/logo.png",
-        href: "/logo.png",
+        url: "/logo.webp",
+        href: "/logo.webp",
       },
       {
         media: "(prefers-color-schem: dark",
-        url: "/logo-dark.png",
-        href: "/logo-dark.png",
+        url: "/logo-dark.webp",
+        href: "/logo-dark.webp",
       }
     ]
   }
