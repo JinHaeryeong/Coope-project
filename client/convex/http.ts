@@ -3,7 +3,6 @@ import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import type { WebhookEvent } from "@clerk/backend";
 import { Webhook } from "svix";
-import { request } from "http";
 import { Id } from "./_generated/dataModel";
 
 const http = httpRouter();
