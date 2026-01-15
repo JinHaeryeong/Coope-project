@@ -95,7 +95,7 @@ const Introduction = () => {
                                 <>
                                     <SignInButton mode="modal">
                                         <Button className="mr-2">
-                                            Get Coope free
+                                            시작하기
                                             <ArrowRight className="h-4 w-4 ml-2" />
                                         </Button>
                                     </SignInButton>

@@ -36,8 +36,8 @@ const ChatInput = ({
         }
     };
     return (
-        // p-4를 추가해 여백을 주고, border-t로 경계선을 만들면 더 깔끔하게 하기
-        <div className="w-full bottom-0 bg-white dark:bg-[#1F1F1F] p-4 border-t">
+        // p-2를 추가해 여백을 주고, border-t로 경계선을 만들면 더 깔끔하게 하기
+        <div className="w-full bottom-0 bg-white dark:bg-[#1F1F1F] p-1 md:p-4 border-t">
             {selectedFile && (
                 <div className="text-xs opacity-60 mb-2 flex items-center gap-2">
                     {selectedFile.name} <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedFile(null)} />

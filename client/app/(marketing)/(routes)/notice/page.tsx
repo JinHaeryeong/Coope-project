@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import NoticeContent from "../../_components/noticeContent";
+import NoticeContent from "../../_components/notices/notice-content";
 
 const Notice = () => {
     return (

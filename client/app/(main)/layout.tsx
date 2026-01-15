@@ -47,7 +47,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {!pathname.includes("/friends") && (
             <Button
               type="button"
-              className="fixed bottom-10 right-10 z-[9999] rounded-full"
+              className="fixed bottom-5 right-5 md:bottom-10 md:right-10 z-[9999] rounded-full"
               onClick={() => setIsChatOpen(true)}
             >
               <Ghost />

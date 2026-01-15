@@ -56,8 +56,8 @@ function UserItem() {
             role="button"
             className="flex items-center text-sm p-3 w-full hover:bg-primary/5"
           >
-            <div className="gap-x-1 flex items-center max-w-[150px] ml-5">
-              <Avatar className="h-5 w-5 rounded-[6px]">
+            <div className="flex items-center md:max-w-[150px] ml-5 gap-x-2">
+              <Avatar className="md:h-5 md:w-5 rounded-full">
                 <AvatarImage src={user?.imageUrl} />
               </Avatar>
               <span className="text-start font-medium line-clamp-1 text-white">
@@ -114,7 +114,7 @@ function UserItem() {
 
           <DropdownMenuItem className="w-full cursor-pointer text-muted-foreground" asChild>
             <SignOutButton>
-              Log out
+              로그아웃
             </SignOutButton>
           </DropdownMenuItem>
         </DropdownMenuContent>

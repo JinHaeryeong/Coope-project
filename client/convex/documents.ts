@@ -1,20 +1,31 @@
-import {v} from 'convex/values'
+import { v } from 'convex/values'
 
-import {mutation,query} from './_generated/server'
-import {Doc,Id} from './_generated/dataModel'
+import { mutation, query } from './_generated/server'
+import { Doc, Id } from './_generated/dataModel'
 
+
+// 워크스페이스 멤버인지 체크하는 함수
+async function checkMembership(ctx: any, userId: string, workspaceId: string) {
+  const isMember = await ctx.db
+    .query("workspaceMembers")
+    .withIndex("by_user_workspace", (q: any) =>
+      q.eq("userId", userId).eq("workspaceId", workspaceId)
+    )
+    .first();
+  if (!isMember) throw new Error("Unauthorized");
+}
 
 export const archive = mutation({
-  args:{id:v.id("documents")},
-  handler:async (context,args) => {
-   const identity = await context.auth.getUserIdentity()
+  args: { id: v.id("documents") },
+  handler: async (context, args) => {
+    const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
       throw new Error("Not authenticated")
     }
 
     const userId = identity.subject
-    
+
     const existingDocument = await context.db.get(args.id)
 
     if (!existingDocument) {
@@ -25,24 +36,24 @@ export const archive = mutation({
       throw new Error("Unauthorized")
     }
 
-    const recursiveArchive = async (documentId:Id<'documents'>) => {
+    const recursiveArchive = async (documentId: Id<'documents'>) => {
       const children = await context.db
-      .query('documents')
-      .withIndex("by_user_parent",q => (
-        q.eq("userId",userId).eq('parentDocument',documentId)
-      ))
-      .collect()
-    
+        .query('documents')
+        .withIndex("by_user_parent", q => (
+          q.eq("userId", userId).eq('parentDocument', documentId)
+        ))
+        .collect()
+
       for (const child of children) {
-        await context.db.patch(child._id,{
-          isArchived:true
+        await context.db.patch(child._id, {
+          isArchived: true
         })
         await recursiveArchive(child._id)
       }
     }
 
-    const document = await context.db.patch(args.id,{
-      isArchived:true
+    const document = await context.db.patch(args.id, {
+      isArchived: true
     })
 
     recursiveArchive(args.id)
@@ -52,11 +63,11 @@ export const archive = mutation({
 })
 
 export const getSidebar = query({
-  args:{
+  args: {
     workspaceId: v.string(),
-    parentDocument:v.optional(v.id("documents"))
+    parentDocument: v.optional(v.id("documents"))
   },
-  handler:async (context,args) => {
+  handler: async (context, args) => {
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
@@ -66,38 +77,38 @@ export const getSidebar = query({
     const userId = identity.subject
 
     const documents = await context.db
-    .query("documents")
-    .withIndex("by_workspace_parent", q =>
-      q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
-    )
-    .filter(q => q.eq(q.field("isArchived"),false))
-    .order('desc')
-    .collect()
+      .query("documents")
+      .withIndex("by_workspace_parent", q =>
+        q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
+      )
+      .filter(q => q.eq(q.field("isArchived"), false))
+      .order('desc')
+      .collect()
 
     return documents
   }
 })
 
 export const create = mutation({
-  args:{
-    title:v.string(),
+  args: {
+    title: v.string(),
     workspaceId: v.string(),
-    parentDocument:v.optional(v.id('documents')),
+    parentDocument: v.optional(v.id('documents')),
     content: v.optional(v.string())
   },
-  handler:async (context,args) => {
+  handler: async (context, args) => {
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
       throw new Error('Not authenticated')
     }
 
-    const document = await context.db.insert('documents',{
-      title:args.title,
-      parentDocument:args.parentDocument,
+    const document = await context.db.insert('documents', {
+      title: args.title,
+      parentDocument: args.parentDocument,
       userId: identity.subject,
-      isArchived:false,
-      isPublished:false,
+      isArchived: false,
+      isPublished: false,
       workspaceId: args.workspaceId,
       content: args.content ?? ""
     })
@@ -107,11 +118,11 @@ export const create = mutation({
 })
 
 export const getTrash = query({
-  args:{
+  args: {
     workspaceId: v.string(),
-    parentDocument:v.optional(v.id("documents"))
+    parentDocument: v.optional(v.id("documents"))
   },
-  handler:async (context, args) => {
+  handler: async (context, args) => {
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
@@ -121,20 +132,20 @@ export const getTrash = query({
     const userId = identity.subject
 
     const documents = await context.db.query('documents')
-    .withIndex("by_workspace_parent", q =>
-      q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
-    )
-    .filter(q => q.eq(q.field('isArchived'),true))
-    .order('desc')
-    .collect()
+      .withIndex("by_workspace_parent", q =>
+        q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
+      )
+      .filter(q => q.eq(q.field('isArchived'), true))
+      .order('desc')
+      .collect()
 
     return documents
   }
 })
 
 export const restore = mutation({
-  args:{id:v.id('documents')},
-  handler: async (context,args) => {
+  args: { id: v.id('documents') },
+  handler: async (context, args) => {
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
@@ -153,24 +164,24 @@ export const restore = mutation({
       throw new Error("Unauthorized")
     }
 
-    const recursiveRestore = async (documentId:Id<'documents'>) => {
+    const recursiveRestore = async (documentId: Id<'documents'>) => {
       const children = await context.db.query('documents')
-      .withIndex('by_user_parent',q => (
-        q.eq('userId',userId).eq('parentDocument',documentId)
-      ))
-      .collect()
+        .withIndex('by_user_parent', q => (
+          q.eq('userId', userId).eq('parentDocument', documentId)
+        ))
+        .collect()
 
       for (const child of children) {
-        await context.db.patch(child._id,{
-          isArchived:false
+        await context.db.patch(child._id, {
+          isArchived: false
         })
 
         await recursiveRestore(child._id)
       }
     }
 
-    const options:Partial<Doc<'documents'>> = {
-      isArchived:false
+    const options: Partial<Doc<'documents'>> = {
+      isArchived: false
     }
 
     if (existingDocument.parentDocument) {
@@ -180,7 +191,7 @@ export const restore = mutation({
       }
     }
 
-    const document = await context.db.patch(args.id,options)
+    const document = await context.db.patch(args.id, options)
 
     recursiveRestore(args.id)
 
@@ -190,8 +201,8 @@ export const restore = mutation({
 
 
 export const remove = mutation({
-  args:{id:v.id('documents')},
-  handler:async (context,args) => {
+  args: { id: v.id('documents') },
+  handler: async (context, args) => {
 
     const identity = await context.auth.getUserIdentity()
 
@@ -218,12 +229,12 @@ export const remove = mutation({
 })
 
 export const getSearch = query({
-  args:{
+  args: {
     workspaceId: v.string(),
-    parentDocument:v.optional(v.id("documents"))
+    parentDocument: v.optional(v.id("documents"))
   },
-  handler:async (context, args) => {
-   
+  handler: async (context, args) => {
+
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
@@ -231,14 +242,14 @@ export const getSearch = query({
     }
 
     const userId = identity.subject
-    
+
     const documents = await context.db.query('documents')
-    .withIndex("by_workspace_parent", q =>
-      q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
-    )
-    .filter(q => q.eq(q.field('isArchived'),false))
-    .order('desc')
-    .collect()
+      .withIndex("by_workspace_parent", q =>
+        q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
+      )
+      .filter(q => q.eq(q.field('isArchived'), false))
+      .order('desc')
+      .collect()
 
     return documents
   }
@@ -269,7 +280,7 @@ export const getById = query({
 
     const userId = identity.subject;
 
-    // ✅ 해당 워크스페이스의 멤버인지 확인
+    // 해당 워크스페이스의 멤버인지 확인
     const isMember = await ctx.db
       .query("workspaceMembers")
       .withIndex("by_user_workspace", q =>
@@ -288,15 +299,15 @@ export const getById = query({
 
 
 export const update = mutation({
-  args:{
-    id:v.id('documents'),
-    title:v.optional(v.string()),
-    content:v.optional(v.string()),
-    coverImage:v.optional(v.string()),
-    icon:v.optional(v.string()),
-    isPublished:v.optional(v.boolean())
+  args: {
+    id: v.id('documents'),
+    title: v.optional(v.string()),
+    content: v.optional(v.string()),
+    coverImage: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isPublished: v.optional(v.boolean())
   },
-  handler:async (context,args) => {
+  handler: async (context, args) => {
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
@@ -305,7 +316,7 @@ export const update = mutation({
 
     const userId = identity.subject
 
-    const {id,...rest} = args
+    const { id, ...rest } = args
 
     const existingDocument = await context.db.get(args.id)
 
@@ -313,11 +324,24 @@ export const update = mutation({
       throw new Error("Not found")
     }
 
-    if (existingDocument.userId !== userId) {
-      throw new Error('Unauthorized')
+    // 기존 로직: 작성자 본인만 가능 => 워크스페이스 초대기능은 만들어놓고 사용을 못함
+    // if (existingDocument.userId !== userId) {
+    //   throw new Error('Unauthorized')
+    // }
+
+    // 개선 로직: 같은 워크스페이스 멤버라면 누구나 수정 가능!
+    const isMember = await context.db
+      .query("workspaceMembers")
+      .withIndex("by_user_workspace", q =>
+        q.eq("userId", userId).eq("workspaceId", existingDocument.workspaceId)
+      )
+      .first();
+
+    if (!isMember) {
+      throw new Error("Unauthorized");
     }
 
-    const document = await context.db.patch(args.id,{
+    const document = await context.db.patch(args.id, {
       ...rest
     })
 
@@ -325,61 +349,34 @@ export const update = mutation({
   }
 })
 
-
 export const removeIcon = mutation({
-  args:{id:v.id('documents')},
-  handler:async (context,args) => {
-    const identity = await context.auth.getUserIdentity()
+  args: { id: v.id('documents') },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
 
-    if (!identity) {
-      throw new Error("Unauthenticated")
-    }
+    const document = await ctx.db.get(args.id);
+    if (!document) throw new Error("Not found");
 
-    const userId = identity.subject
+    // 주인 확인 대신 멤버인지 확인!
+    await checkMembership(ctx, identity.subject, document.workspaceId);
 
-     const existingDocument = await context.db.get(args.id)
-
-    if (!existingDocument) {
-      throw new Error('Not found')
-    }
-
-    if (existingDocument.userId !== userId) {
-      throw new Error("Unauthorized")
-    }
-
-    const document = await context.db.patch(args.id,{
-      icon:undefined
-    })
-
-    return document
-  } 
-})
+    return await ctx.db.patch(args.id, { icon: undefined });
+  }
+});
 
 export const removeCoverImage = mutation({
-  args:{id:v.id('documents')},
-  handler:async (context,args) => {
-    const identity = await context.auth.getUserIdentity()
+  args: { id: v.id('documents') },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
 
-    if (!identity) {
-      throw new Error("Unauthenticated")
-    }
+    const document = await ctx.db.get(args.id);
+    if (!document) throw new Error("Not found");
 
-    const userId = identity.subject
+    // 주인 확인 대신 멤버인지 확인!
+    await checkMembership(ctx, identity.subject, document.workspaceId);
 
-    const existingDocument = await context.db.get(args.id)
-
-    if (!existingDocument) {
-      throw new Error('Not found')
-    }
-
-    if (existingDocument.userId !== userId) {
-      throw new Error("Unauthorized")
-    }
-
-    const document = await context.db.patch(args.id,{
-      coverImage:undefined
-    })
-
-    return document
+    return await ctx.db.patch(args.id, { coverImage: undefined });
   }
-})
+});

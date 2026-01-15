@@ -5,9 +5,10 @@ import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "convex/react";
 import Image from "next/image";
-import AddFriend from "@/app/(main)/_components/friends/addFriend"; // 친구 추가 버튼과 기능
+import AddFriend from "@/app/(main)/_components/friends/add-friend"; // 친구 추가 버튼과 기능
 import FriendPage from "@/app/(main)/_components/friends/friend"; // 친구(요청중, 수락됨)이 있을 경우의 페이지
-import FriendRequestList from "@/app/(main)/_components/friends/friendRequestList";
+import FriendRequestList from "@/app/(main)/_components/friends/friend-request-list";
+import { FriendProvider } from "@/app/(main)/_components/friends/friend-context";
 
 const ListOfFriends = () => {
   const { user } = useUser();
@@ -48,7 +49,9 @@ const ListOfFriends = () => {
   // 수락된 친구가 있다면 데이터를 넘겨주며 FriendPage를 열기
   return (
     <div className="h-full">
-      <FriendPage initialFriends={acceptedFriends} />
+      <FriendProvider initialFriends={acceptedFriends}>
+        <FriendPage />
+      </FriendProvider>
     </div>
   );
 };

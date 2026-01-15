@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff } from "lucide-react";
-import CallModal from "./callModal";
+import CallModal from "./call-modal";
 
 interface CallSettings {
     mic: boolean;

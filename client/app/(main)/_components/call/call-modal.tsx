@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import React, { useRef, useState } from "react";
-import WebRTCComponent from "./WebRtcComponent"; // WebRTC 추가
+import WebRTCComponent from "./web-rtc-component"; // WebRTC 추가
 import { Expand, Minus, PhoneOff, Square, SquareArrowOutDownLeft, X } from "lucide-react";
 import Draggable from "react-draggable";
 
@@ -31,7 +31,7 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
             relative transition-all duration-300 border bg-white dark:bg-neutral-900 shadow-2xl
             ${isFullScreen
               ? "w-screen h-screen rounded-none" // 전체 화면 모드
-              : "w-11/12 md:w-8/12 lg:w-5/12 h-auto rounded-2xl p-6" // 기본 모달 모드
+              : "w-full md:w-8/12 lg:w-5/12 h-auto rounded-sm md:rounded-2xl p-6" // 기본 모달 모드
             }
           `}
         >
@@ -47,7 +47,7 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
           </div>
 
           <div className="text-right space-x-2 mt-4">
-            <Button variant="ghost" size="icon" onClick={() => setMinimized(true)}>
+            <Button variant="ghost" size="icon" onClick={() => setMinimized(true)} className="hidden md:inline-flex">
               <Minus />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setIsFullScreen(!isFullScreen)}>
@@ -62,7 +62,7 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
 
       {minimized && (
         <Draggable nodeRef={draggableRef as React.RefObject<HTMLElement>}>
-          <div ref={draggableRef} className="fixed bottom-4 right-4 z-50 bg-neutral-900 text-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-3">
+          <div ref={draggableRef} className="md:fixed bottom-4 right-4 z-50 bg-neutral-900 text-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-3">
             <span className="text-sm">통화 중...</span>
             <Button size="icon" variant="ghost" onClick={() => setMinimized(false)}><Expand /></Button>
             <Button size="icon" variant="ghost" onClick={() => {

@@ -9,9 +9,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import AnswerWrite from "@/app/(marketing)/_components/answerWrite";
-import AnswerList from "@/app/(marketing)/_components/answers";
+import AnswerWrite from "@/app/(marketing)/_components/inquiries/answer-write";
+import AnswerList from "@/app/(marketing)/_components/inquiries/answers";
 import { Id } from "@/convex/_generated/dataModel";
+import { CalendarDays, Computer, MessageCircle, User } from "lucide-react";
 
 
 
@@ -70,34 +71,46 @@ const InquiryContent = () => {
     const answerClose = () => { setIsanswerOpen(false) };
 
     return (
+        <div className="px-4 md:px-12 min-h-full flex justify-center py-10">
+            <div className="w-full max-w-7xl">
+                <nav className="flex gap-2 mb-4 text-sm md:text-base text-slate-600 dark:text-slate-50">
+                    <Link href="/" className="hover:text-primary">홈</Link>
+                    <span>&gt;</span>
+                    <Link href="/customerService" className="hover:text-primary">고객지원</Link>
+                </nav>
+                <h1 className="text-2xl md:text-4xl font-bold mb-4 md:mb-5 break-all">{inquiry?.title}</h1>
+                <div className="gap-2  flex flex-col sm:flex-row md:gap-5 text-sm md:text-lg mb-4 text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center gap-2"><User size={18} />{inquiry.userName} 작성</div>
+                    <div className="flex gap-2 items-center">
+                        <CalendarDays size={18} />
+                        {new Intl.DateTimeFormat('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true
+                        }).format(new Date(inquiry?._creationTime))}
+                    </div>
+                    <div className="gap-x-2 flex  items-center">
+                        <MessageCircle size={18} />
+                        문의 유형: {inquiry.category}
+                    </div>
+                    <div className="gap-x-2 flex  items-center">
+                        <Computer size={18} />
+                        환경: {inquiry.environment}
+                    </div>
 
-        <div className="mx-12 min-h-full flex justify-center py-10">
-            <div className="h-full w-1/2">
-                <h1 className="text-4xl font-bold mb-6">{inquiry?.title}</h1>
-                <span className="text-xl">작성자</span>
-                <h2 className="text-xl font-normal mb-2">{inquiry.userName}</h2>
-                <span className="text-xl">문의 유형 및 환경</span>
-                <h2 className="text-xl font-normal mb-2">{inquiry.category}, {inquiry.environment}</h2>
-                <span className="text-xl">작성 일시</span>
-                <h2 className="text-xl font-normal mb-2 ">
-                    {new Intl.DateTimeFormat('ko-KR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: true
-                    }).format(new Date(inquiry?._creationTime))}
-                </h2>
-                <span className="text-xl">내용</span>
-                <div className=" text-lg leading-relaxed font-medium mb-2">
+                </div>
+                <div className="text-slate-700 text-base md:text-lg leading-relaxed dark:text-slate-200 break-words">
                     {inquiry?.content}
                 </div>
                 <div className="grid-col-3">
                     {inquiry.files && inquiry.files.map((file) =>
                         <div key={file._id}>
-                            <h1 className="font-medium">{file.fileName}</h1>
+                            <h2 className="text-xl font-bold mb-2">첨부 파일</h2>
+                            <h3>{file.fileName}</h3>
                             {file.url &&
                                 <Link href={file.url} rel="noopener noreferrer" target="_blank">
                                     <Image
@@ -108,9 +121,7 @@ const InquiryContent = () => {
                                         height={500}
                                         style={{ cursor: 'pointer' }}
                                     /></Link>}
-                            {/*<ImageModal isOpen={isModalOpen} onClose={handleCloseModal} imageUrl={currentImageUrl}></ImageModal>*/}
                         </div>
-
                     )}
                 </div>
 
@@ -139,7 +150,8 @@ const InquiryContent = () => {
                     </div>
                 }
                 {isanswerOpen && <AnswerWrite inquiry={inquiryId as Id<"inquiryDetails">} onClose={answerClose} userEmail={inquiry.userEmail} userName={inquiry.userName} />}
-                <div><h2 className="text-2xl font-medium">답변</h2></div>
+                <hr />
+                <div><h2 className="text-2xl font-bold my-2 box-content">답변</h2></div>
                 <AnswerList postId={inquiryId} />
             </div>
         </div>
