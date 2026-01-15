@@ -4,7 +4,7 @@
   <img width="554" height="117"  alt="logo" src="https://github.com/user-attachments/assets/ee9196c1-a378-453f-a262-ed885714b888" />
 </p>
 
-> "Next.js와 Mediasoup SFU 아키텍처를 결합한 고성능 다자간 화상 회의 및 실시간 협업 툴" 본 프로젝트는 WebRTC Mesh 방식의 한계를 SFU(Selective Forwarding Unit) 방식으로 해결하고, 실시간 문서 동기화 기능을 결합한 협업 플랫폼입니다.
+> "Next.js와 Mediasoup SFU 아키텍처를 결합한 화상 회의 및 실시간 툴"
 
 
 ---
@@ -60,17 +60,25 @@
 │  │  │  ├─ _components
 │  │  │  │  ├─ banner.tsx
 │  │  │  │  ├─ call
-│  │  │  │  │  ├─ WebRtcComponent.tsx
-│  │  │  │  │  ├─ callModal.tsx
-│  │  │  │  │  ├─ callPreJoinModal.tsx
-│  │  │  │  │  └─ miniCallPopup.tsx
+│  │  │  │  │  ├─ call-modal.tsx
+│  │  │  │  │  ├─ call-pre-join-modal.tsx
+│  │  │  │  │  ├─ mini-call-popup.tsx
+│  │  │  │  │  └─ web-rtc-component.tsx
 │  │  │  │  ├─ friends
-│  │  │  │  │  ├─ addFriend.tsx
-│  │  │  │  │  ├─ chat-input.tsx
+│  │  │  │  │  ├─ add-friend.tsx
+│  │  │  │  │  ├─ chat
+│  │  │  │  │  │  ├─ chat-input.tsx
+│  │  │  │  │  │  ├─ chat-window.tsx
+│  │  │  │  │  │  ├─ message-item.tsx
+│  │  │  │  │  │  └─ mobile-chat-window.tsx
+│  │  │  │  │  ├─ desktop-friend-view.tsx
+│  │  │  │  │  ├─ friend-context.tsx
 │  │  │  │  │  ├─ friend-list-item.tsx
+│  │  │  │  │  ├─ friend-request-list.tsx
+│  │  │  │  │  ├─ friend-sidebar.tsx
 │  │  │  │  │  ├─ friend.tsx
-│  │  │  │  │  ├─ friendRequestList.tsx
-│  │  │  │  │  ├─ message-item.tsx
+│  │  │  │  │  ├─ mobile-friend-list.tsx
+│  │  │  │  │  ├─ mobile-friend-view.tsx
 │  │  │  │  │  └─ userList.tsx
 │  │  │  │  ├─ invite-button.tsx
 │  │  │  │  ├─ item.tsx
@@ -104,22 +112,24 @@
 │  │  │  │  └─ support
 │  │  │  │     └─ page.tsx
 │  │  │  ├─ _components
-│  │  │  │  ├─ ScrollToTop.tsx
-│  │  │  │  ├─ answerWrite.tsx
-│  │  │  │  ├─ answers.tsx
-│  │  │  │  ├─ commentForm.tsx
-│  │  │  │  ├─ commentList.tsx
 │  │  │  │  ├─ faq.tsx
 │  │  │  │  ├─ footer.tsx
 │  │  │  │  ├─ heading.tsx
 │  │  │  │  ├─ heroes.tsx
-│  │  │  │  ├─ imageModal.tsx
+│  │  │  │  ├─ image-modal.tsx
+│  │  │  │  ├─ inquiries
+│  │  │  │  │  ├─ answer-write.tsx
+│  │  │  │  │  └─ answers.tsx
 │  │  │  │  ├─ logo.tsx
 │  │  │  │  ├─ modal.tsx
 │  │  │  │  ├─ navbar.tsx
-│  │  │  │  ├─ noticeContent.tsx
-│  │  │  │  ├─ noticeWrite.tsx
+│  │  │  │  ├─ notices
+│  │  │  │  │  ├─ comment-form.tsx
+│  │  │  │  │  ├─ comment-list.tsx
+│  │  │  │  │  ├─ notice-content.tsx
+│  │  │  │  │  └─ notice-write.tsx
 │  │  │  │  ├─ policy.tsx
+│  │  │  │  ├─ scroll-to-top.tsx
 │  │  │  │  └─ term.tsx
 │  │  │  ├─ admin
 │  │  │  │  ├─ SearchUsers.tsx
@@ -209,6 +219,7 @@
 │  ├─ eslint.config.mjs
 │  ├─ hooks
 │  │  ├─ use-cover-image.ts
+│  │  ├─ use-editor-sync.ts
 │  │  ├─ use-enter-workspace.ts
 │  │  ├─ use-invite.ts
 │  │  ├─ use-mediasoup.ts
@@ -221,10 +232,12 @@
 │  │  ├─ action.ts
 │  │  ├─ edgestore.ts
 │  │  └─ utils.ts
+│  ├─ load-test.js
 │  ├─ middleware.ts
 │  ├─ next.config.ts
-│  ├─ package-lock.json
 │  ├─ package.json
+│  ├─ pnpm-lock.yaml
+│  ├─ pnpm-workspace.yaml
 │  ├─ postcss.config.mjs
 │  ├─ public
 │  │  ├─ chat.png
@@ -279,14 +292,9 @@
    ├─ server.ts
    ├─ src
    │  ├─ config
-   │  │  ├─ mediasoupConfig.ts
-   │  │  └─ openaiConfig.ts
-   │  ├─ controllers
-   │  │  └─ sttController.ts
+   │  │  └─ mediasoupConfig.ts
    │  ├─ mediasoup
    │  │  └─ manager.ts
-   │  ├─ routes
-   │  │  └─ apiRouter.ts
    │  └─ socket
    │     ├─ index.ts
    │     └─ roomHandler.ts
@@ -306,7 +314,7 @@
 
 > 터미널 1(Front)
 - cd client
-- npm i
+- pnpm i
 > 터미널 2(Back)
 - cd server
 - npm i
@@ -324,13 +332,13 @@
 ---
 
 ## 핵심 기능
-### SFU 다자간 화상 회의 (WebRTC, Mediasoup)
-- 서버에서 미디어 스트림을 중계하는 SFU 방식을 채택하여 다수 참여 시에도 클라이언트 부하 최적화.
-- 전체화면 모드: 반응형 레이아웃을 통한 몰입감 있는 회의 환경 제공.
+### SFU 방식의 화상 회의 (WebRTC, Mediasoup)
+- 서버에서 미디어 스트림을 중계하는 SFU 방식을 채택하여 다수 참여 시에도 클라이언트 부하 최적화
+- 전체화면 모드 제공
 
 ### AI 회의 기록 및 요약 (OpenAI, STT)
-- 실시간 마이크 스트림을 캡처하여 Whisper 모델로 텍스트 변환.
-- 회의 내용을 분석하여 AI 요약본을 자동으로 생성하고 문서로 저장.
+- 실시간 마이크 스트림을 캡처하여 Whisper 모델로 텍스트 변환
+- 회의 내용을 분석하여 AI 요약본을 자동으로 생성하고 문서로 저장
 
 ### 실시간 워크스페이스 (Convex)
 - 노션 스타일의 블록 기반 문서 편집기 및 실시간 초대/권한 관리.
@@ -341,68 +349,52 @@
 ## 🛠️ 개발 중 겪은 문제 & 해결 방법
 ### Clerk - Convex 간 실시간 유저 데이터 동기화 이슈
 문제: Clerk에서 회원가입/수정 발생 시 Convex 데이터베이스의 유저 테이블에 즉시 반영되지 않는 현상
-
 원인: 
 - 엔드포인트 설정 오류: Convex HTTP Action 전용 도메인(.site)이 아닌 일반 Deployment URL을 사용하여 Clerk의 Webhook 호출 실패
 - 보안 검증 누락: Clerk에서 전송한 Webhook Payload의 신뢰성을 보장하기 위한 svix 서명 검증(Signing Secret) 프로세스 미비
-
 해결:
 - convex/http.ts를 구현하여 전용 Webhook 엔드포인트를 구축
 - Clerk 대시보드와 Convex 환경 변수 간 Signing Secret을 동기화하고, svix 라이브러리를 활용해 요청 무결성 검증 로직을 추가하여 보안과 데이터 정합성을 동시에 해결
 
 ### GPT API 대화 맥락 유지 및 클라이언트 사이드 캐싱
 문제: AI 채팅 이용 중 페이지를 새로고침하거나 브라우저를 재시작하면 기존 대화 내역이 유실되어 대화의 맥락(Context)이 끊기는 불편함 발생
-
 원인: 채팅 데이터가 React State(메모리)에만 저장되어 있어, 브라우저 세션이 종료되면 데이터가 초기화됨
-
 해결:
-
 - Context API + LocalStorage: React Context를 사용하여 전역 상태를 관리하되, useEffect를 통해 상태가 변경될 때마다 브라우저의 LocalStorage에 동기화하여 데이터 지속성 확보.
-
 - 데이터 최적화 전략:
-
-1. 용량 제한: 무한히 늘어날 수 있는 대화 내역을 방지하기 위해 최대 저장 개수를 100개로 제한(slice).
-2. 만료 정책(TTL): 사용자 프라이버시 및 최신성 유지를 위해 7일이 지난 오래된 데이터는 필터링하여 자동 삭제하는 로직 구현.
+  1. 용량 제한: 무한히 늘어날 수 있는 대화 내역을 방지하기 위해 최대 저장 개수를 100개로 제한(slice).
+  2. 만료 정책(TTL): 사용자 프라이버시 및 최신성 유지를 위해 7일이 지난 오래된 데이터는 필터링하여 자동 삭제하는 로직 구현.
 
 ### WebRTC 미디어 동기화 Race Condition 해결
 문제: 사용자가 회의 입장 시, 기존 참여자의 스트림이 즉시 로드되지 않는 현상 발생
-
 원인: 미디어 서버의 프로듀서 목록 송신 시점과 클라이언트 Mediasoup Device 로딩 완료 시점 간의 비동기 타이밍 문제 (Device가 준비되기 전 데이터를 수신하여 처리 실패)
-
 해결: 클라이언트가 장치 준비를 마치고 능동적으로 서버에 목록을 요청하는 Pull 방식(getExistingProducers)으로 리팩토링하여 완벽한 동기화 보장
 
 ### 투명 레이어 클릭 간섭(Z-Index) 이슈
 문제: 상단 네비게이션 바가 투명함에도 불구하고 특정 영역의 버튼 클릭이 작동하지 않음.
-
 원인: absolute 포지셔닝된 상단 바가 w-full로 설정되어 보이지 않게 클릭 이벤트를 가로챔.
-
 해결: pointer-events: none을 부모 레이어에 설정하고, 실제 인터랙션이 필요한 아이콘에만 pointer-events: auto를 부여하여 해결.
 
 ### AWS EC2 배포 환경의 보안 컨텍스트(HTTPS) 이슈
 문제: 로컬 환경과 달리 배포 환경에서 카메라, 마이크, 화면 공유 등 미디어 스트림이 작동하지 않는 현상 발생
-
 원인: WebRTC 보안 정책상 미디어 디바이스 접근(getUserMedia)은 보안 컨텍스트(HTTPS) 내에서만 허용 => Vercel로 배포된 프론트엔드(HTTPS)에서 SSL이 적용되지 않은 EC2 서버(HTTP)로 요청을 보낼 때 Mixed Content 오류 및 보안 거부 발생.
-
 해결: 도메인 확보 후 A 레코드를 설정하여 EC2 인스턴스와 연결하고, Nginx를 역방향 프록시(Reverse Proxy)로 구성한 뒤 Certbot(Let's Encrypt)을 통해 SSL 인증서를 발급받아 HTTPS 환경을 구축하여 해결
 
 ---
-## 🔧 추후 보완점
+## 추후 보완점
 1. 다자간 통화 UI 및 반응형 웹 완성
-- 현재 상태: Mediasoup(SFU) 기반으로 다자간 통화가 가능한 인프라는 구축되어 있으나, UI 및 로직상 1:1 연결에 최적화되어 있음.
+- 현재 상태: Mediasoup(SFU) 기반으로 다자간 통화가 가능한 인프라는 구축되어 있으나, 로직(여러명이 함께 있을 수 있는 채팅방 미구현 => 1:1 채팅방만 구현되어있음)상 1:1 연결에 최적화되어 있음 => UI는 다자간 가능하게 이미되어있음
 - 개선 방향: 1:1 채팅방을 넘어 다수 참여자가 포함된 그룹 채팅방 기능을 구현하고, 여러 명의 비디오 스트림을 효율적으로 배치하려고함
 - 가로가 짧고 세로가 긴(ex. PC 카톡 채팅방) 창의 경우 화면공유시 UI가 망가짐 수정필요
 
 2. Mediasoup 오케스트레이션 및 상태 동기화 (Redis 활용)
-- 화면 크기에 따른 반응형 사이트로 리팩토링 진행
-- 오류 발생 코드 수정
+- 사용자가 여러 미디어 서버 노드에 분산되어 접속하더라도, 특정 화상 통화 방(Room)의 정보를 모든 서버가 실시간으로 공유할 수 있도록 Redis Pub/Sub 및 캐시 시스템을 도입
+- 서버 장애 발생 시 통화 세션 정보를 Redis에서 즉시 복구하여 연결 끊김을 최소화하는 고가용성 아키텍처를 목표로 하기..
 
 3. 오토스케일링(Auto-scaling) 및 인프라 안정화
 - 현재 상태: 단일 EC2 인스턴스 환경에서 운영
 - 개선 방향: 트래픽 증가에 따라 서버 자원을 유동적으로 조절할 수 있도록 AWS Auto Scaling을 적용하고, 로드 밸런서를 통해 부하 분산 처리를 자동화하여 서비스 안정성을 높일 예정
 
-4. UX/UI 고도화 및 반응형 디자인 완성
-- 현재 상태: 핵심 기능 위주의 인터페이스 구현
-- 개선 방향: 사용자 경험(UX) 향상을 위해 모바일 환경에서도 최적화된 반응형 디자인을 보완하고, 미디어 연결 상태를 시각적으로 피드백해주는 인디케이터 등 세밀한 UI 요소를 추가할 예정
 
 
 ---
