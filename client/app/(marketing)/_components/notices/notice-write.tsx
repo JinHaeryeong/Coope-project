@@ -104,9 +104,9 @@ const NewPost = () => {
 
 
   return (
-    <div>
-      <div className="heading text-center font-bold text-2xl m-5">공지사항</div>
-      <form onSubmit={handleSubmit} className="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl rounded-lg">
+    <div className="w-11/12 justify-center mx-auto my-10">
+      <div className="heading text-center font-bold text-5xl m-5">공지사항</div>
+      <form onSubmit={handleSubmit} className="editor mx-auto w-full flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg  rounded-lg">
         <input
           className="title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none"
           placeholder="제목"
@@ -117,7 +117,7 @@ const NewPost = () => {
           required
         />
         <textarea
-          className="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none resize-none"
+          className="description bg-gray-100 sec p-3 h-96 border border-gray-300 outline-none resize-none"
           placeholder="내용을 입력하세요."
           name="content"
           value={content}

@@ -66,31 +66,37 @@ export const getMessages = query({
 export const sendFile = mutation({
     args: {
         storageId: v.id("_storage"),
-        text: v.string(),
+        text: v.optional(v.string()), // v.optional로 변경
         author: v.string(),
         format: v.string(),
         fileName: v.string(),
         roomId: v.id("rooms"),
     },
     handler: async (ctx, args) => {
+        // 파일은 무조건 있으니까, 텍스트는 없어도 insert가 가능해집니다.
         const message = await ctx.db.insert("messages", {
             file: args.storageId,
-            text: args.text,
+            text: args.text || "", // undefined면 빈 문자열로 저장
             senderId: args.author,
             format: args.format,
             fileName: args.fileName,
             roomId: args.roomId
-        })
-        const existingStatus = ctx.db.query("userReadStatus").filter((q) => q.eq(q.field("roomId"), args.roomId)).first();
+        });
+
+        // 읽음 상태 업데이트 로직 (기존 유지)
+        const existingStatus = await ctx.db.query("userReadStatus")
+            .filter((q) => q.eq(q.field("roomId"), args.roomId))
+            .first();
+
         if (!existingStatus) {
             await ctx.db.insert("userReadStatus", {
                 lastReadmessageId: message,
                 roomId: args.roomId,
                 userId: args.author
-            })
+            });
         }
     }
-})
+});
 
 //새 메세지(보류)
 export const getNewMessages = query({

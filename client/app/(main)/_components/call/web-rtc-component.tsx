@@ -93,10 +93,10 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
   }, [processing, recording]);
 
   return (
-    <div className={`relative w-full rounded-2xl overflow-hidden bg-neutral-950 flex flex-col items-center justify-center transition-all duration-500 ${isEmptyMain && !isFullScreen ? "aspect-video min-h-[400px]" : "h-full"
+    <div className={`relative w-full rounded-md md:rounded-2xl overflow-hidden bg-neutral-950 flex flex-col items-center justify-center transition-all duration-500 ${isEmptyMain && !isFullScreen ? "aspect-video min-h-[400px]" : "h-full"
       } border border-white/5 shadow-2xl`}>
 
-      {/* 1. 메인 뷰 영역 */}
+      {/* 메인 뷰 영역 */}
       <div className="flex-1 min-h-0 w-full bg-black relative flex items-center justify-center">
         {mainStream ? (
           <div className="w-full h-full relative group">
@@ -133,7 +133,7 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
         )}
       </div>
 
-      {/* 2. 썸네일 스트립 - 접근성 강화 (role, tabIndex 추가) */}
+      {/* 썸네일 스트립 - 접근성 강화 (role, tabIndex 추가) */}
       {showThumbnailStrip && (
         <div className="flex items-center gap-3 overflow-x-auto py-3 px-4 h-40 scrollbar-hide shrink-0 w-full bg-neutral-900/50 backdrop-blur-sm border-t border-white/5">
           {showLocalInThumb && (
@@ -167,14 +167,14 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
         </div>
       )}
 
-      {/* 3. 컨트롤 바 영역 */}
-      <div className="flex justify-center items-center gap-4 w-full py-4 bg-neutral-900/80 border-t border-white/5 backdrop-blur-md">
+      {/* 컨트롤 바 영역 */}
+      <div className="flex justify-center items-center gap-4 w-full py-2 md:py-4 bg-neutral-900/80 border-t border-white/5 backdrop-blur-md box-border">
         <div className="flex items-center gap-4 px-6 py-2 rounded-2xl">
           <Button
             variant={camEnabled ? "default" : "outline"}
             size="icon"
             onClick={toggleCamera}
-            className="rounded-full w-12 h-12 shadow-lg transition-transform active:scale-95"
+            className="rounded-full  md:w-12 md:h-12 shadow-lg transition-transform active:scale-95"
             aria-label={camEnabled ? "카메라 끄기" : "카메라 켜기"}
           >
             {camEnabled ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
@@ -184,7 +184,7 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
             variant={streams.screen ? "default" : "outline"}
             size="icon"
             onClick={toggleScreen}
-            className="rounded-full w-12 h-12 shadow-lg transition-transform active:scale-95"
+            className="rounded-full  md:w-12 md:h-12 shadow-lg transition-transform active:scale-95"
             aria-label={streams.screen ? "화면 공유 중지" : "화면 공유 시작"}
           >
             {streams.screen ? <ScreenShareOff className="w-5 h-5" /> : <ScreenShare className="w-5 h-5" />}
@@ -194,7 +194,7 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
             variant={micEnabled ? "default" : "outline"}
             size="icon"
             onClick={toggleMic}
-            className="rounded-full w-12 h-12 shadow-lg transition-transform active:scale-95"
+            className="rounded-full  md:w-12 md:h-12 shadow-lg transition-transform active:scale-95"
             aria-label={micEnabled ? "마이크 끄기" : "마이크 켜기"}
           >
             {micEnabled ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -205,7 +205,7 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
           <Button
             onClick={handleRecord}
             disabled={processing}
-            className={`rounded-full px-6 h-12 text-white font-semibold transition-all shadow-xl hover:scale-105 active:scale-95 ${recordBtnStyles.color}`}
+            className={`rounded-full px-6 md:h-12 text-white font-semibold transition-all shadow-xl hover:scale-105 active:scale-95 ${recordBtnStyles.color}`}
           >
             {processing ? (
               <span className="flex items-center gap-2">요약 중...</span>

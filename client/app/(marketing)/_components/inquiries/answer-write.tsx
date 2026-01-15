@@ -17,7 +17,7 @@ interface AnswerWriteProps {
 }
 
 export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose, userEmail, userName }) => {
-    const [content, setContent] = useState(userName + "님, 안녕하세요☺️ 문의 주신 사항 답변 드립니다.");
+    const [content, setContent] = useState(userName + "님, 안녕하세요☺️ 문의 주신 사항 답변 드립니다. 이미지가 포함된 답변은 홈 > 고객지원 > 1:1 문의에서 확인하실 수 있습니다.\n\n");
     const { user } = useUser();
     const fileInput = useRef<HTMLInputElement>(null);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);

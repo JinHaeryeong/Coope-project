@@ -1,12 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils"; // 선택 효과를 위해 shadcn에서 쓰는 cn 함수
-import { FriendType } from "./friend";
+import { FriendType } from "./friend-context";
+
 
 interface FriendListItemProps {
     friend: FriendType;
     onClick: () => void;
-    isSelected: boolean; // 선택된 상태인지 구분
+    isSelected?: boolean; // 선택된 상태인지 구분
 }
 
 const FriendListItem = ({ friend, onClick, isSelected }: FriendListItemProps) => {

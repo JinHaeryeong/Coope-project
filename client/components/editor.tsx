@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { useEdgeStore } from "@/lib/edgestore";
 import "@blocknote/core/style.css";
 import "@blocknote/mantine/style.css";
+import { useEditorSync } from "@/hooks/use-editor-sync";
 
 interface EditorProps {
   onChange: (value: string) => void;
@@ -27,14 +28,6 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
     return res.url;
   };
 
-  // const toggleHeading = (id: string) => {
-  //   setCollapsedHeadings((prev) => {
-  //     const newSet = new Set(prev);
-  //     newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-  //     return newSet;
-  //   });
-  // };
-
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent
       ? (JSON.parse(initialContent) as PartialBlock[])
@@ -42,9 +35,12 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
     uploadFile: handleUpload,
   });
 
-  const handleEditorChange = () => {
-    onChange(JSON.stringify(editor.document, null, 2));
-  };
+  const { handleEditorChange } = useEditorSync({
+    editor,
+    initialContent,
+    onChange
+  });
+
 
   return (
     <div>

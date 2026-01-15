@@ -8,7 +8,6 @@ import { Server } from "socket.io";
 import cors from "cors";
 import { initWorker } from "./src/mediasoup/manager";
 import { registerSocketHandlers } from "./src/socket";
-import apiRouter from "./src/routes/apiRouter";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -17,8 +16,7 @@ const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json({ limit: '10mb' }));
 
-// API 라우터 연결
-app.use("/api", apiRouter);
+
 
 const server = http.createServer(app);
 

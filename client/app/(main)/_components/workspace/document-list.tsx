@@ -10,11 +10,13 @@ import { cn } from "@/lib/utils";
 import { FileIcon } from "lucide-react";
 
 interface DocumentListProps {
+  onItemClick?: () => void;
   parentDocumentId?: Id<"documents">;
   level?: number;
 }
 
 export const DocumentList = ({
+  onItemClick,
   parentDocumentId,
   level = 0,
 }: DocumentListProps) => {
@@ -46,6 +48,7 @@ export const DocumentList = ({
   }
   const onRedirect = (documentId: string) => {
     router.push(`/workspace/${workspaceId}/documents/${documentId}`);
+    if (onItemClick) onItemClick();
   };
 
   if (!documents) {

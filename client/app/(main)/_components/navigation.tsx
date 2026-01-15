@@ -11,8 +11,9 @@ import {
   Trash,
   User,
   UserPlus,
+  X, // 모바일 닫기용 아이콘 추가
 } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import UserItem from "./user-item";
 import { useMutation } from "convex/react";
 
@@ -52,14 +53,31 @@ export const Navigation = () => {
   const navbarRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width:768px)");
 
-  // 상태 초기값 설정
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const [isResetting, setIsResetting] = useState(false);
 
   const MIN_WIDTH = 210;
   const MAX_WIDTH = 700;
 
-  // 모바일 대응: 모바일일 경우 자동으로 사이드바 닫기
+  // 사이드바 토글 로직 (useCallback 최적화)
+  const toggleSidebar = useCallback(() => {
+    setIsResetting(true);
+    setIsCollapsed((prev) => !prev);
+    setTimeout(() => setIsResetting(false), 300);
+  }, []);
+
+  // 데스크탑 단축키 추가 (Ctrl + \ 또는 Cmd + \)
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "\\" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, [toggleSidebar]);
+
   useEffect(() => {
     if (isMobile) {
       setIsCollapsed(true);
@@ -68,14 +86,13 @@ export const Navigation = () => {
     }
   }, [isMobile]);
 
-  // 훅 아래에서 조건부 렌더링 처리
+
   if (isWorkspacePath && !workspaceId) {
     return null;
   }
 
   const safeWorkspaceId = workspaceId!;
 
-  // 사이드바 드래그 조절 로직 (성능을 위해 직접 조작 유지하되 transition은 잠시 끔)
   const handleMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
     const startX = event.clientX;
@@ -99,27 +116,27 @@ export const Navigation = () => {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  // 핵심 수정: setInterval 제거 및 상태 기반 애니메이션
-  const toggleSidebar = () => {
-    setIsResetting(true);
-    setIsCollapsed((prev) => !prev);
-
-    // 애니메이션 시간(300ms) 후 transition 해제
-    setTimeout(() => setIsResetting(false), 300);
+  // 중복 코드를 줄이기 위해 모바일일 때 사이드바를 닫아주는 헬퍼 함수
+  const handleAction = (callback: () => void) => {
+    callback(); // 원래 하려던 동작(검색창 열기 등) 실행
+    if (isMobile) {
+      toggleSidebar(); // 모바일이면 사이드바 닫기
+    }
   };
 
   const handleCreate = () => {
     const promise = create({
       title: "Untitled",
       workspaceId: safeWorkspaceId,
-    }).then((documentId) =>
-      router.push(`/workspace/${workspaceId}/documents/${documentId}`)
-    );
+    }).then((documentId) => {
+      if (isMobile) toggleSidebar(); // 페이지 생성 후 모바일이면 닫기
+      router.push(`/workspace/${workspaceId}/documents/${documentId}`);
+    });
 
     toast.promise(promise, {
-      loading: "Creating a new note...",
-      success: "New note created!",
-      error: "Failed to create a new note.",
+      loading: "새 노트 생성 중...",
+      success: "새 노트가 생성되었습니다!",
+      error: "새 노트 생성에 실패했습니다.",
     });
   };
 
@@ -129,49 +146,89 @@ export const Navigation = () => {
 
   return (
     <>
+      {/* 모바일용 백드롭 (배경 어둡게 및 클릭 시 닫기) */}
+      {!isCollapsed && isMobile && (
+        <div
+          onClick={toggleSidebar}
+          className="fixed inset-0 bg-black/60 z-[99998] backdrop-blur-sm transition-opacity"
+        />
+      )}
+
       <aside
         ref={sidebarRef}
         className={cn(
-          "group/sidebar h-full bg-black overflow-y-auto relative flex flex-col z-[99999] rounded-r-xl",
-          isCollapsed ? "w-0" : "w-60", // 상태에 따라 너비 제어
-          isResetting && "transition-all ease-in-out duration-300", // 애니메이션 시에만 transition 적용
-          isMobile && "fixed inset-y-0 left-0" // 모바일일 때 고정 레이아웃
+          "group/sidebar h-full bg-black overflow-y-auto relative flex flex-col z-[99999] md:rounded-r-xl",
+          isCollapsed ? "w-0" : "w-full md:w-60",
+          isResetting && "transition-all ease-in-out duration-300",
+          isMobile && "fixed inset-y-0 left-0 shadow-2xl"
         )}
       >
-        {/* 내부 콘텐츠가 너비가 줄어들 때 깨지지 않도록 wrapper 추가 */}
         <div className={cn(
-          "w-60 h-full flex flex-col transition-opacity duration-300",
+          "w-full h-full flex flex-col transition-opacity duration-300",
           isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
         )}>
-          <div className="p-4">
+          <div className="p-4 flex items-center justify-between">
             <Image
               src="/logo-dark.png"
               width={176}
               height={48}
               alt="Logo"
-              className="h-auto ml-2 cursor-pointer hover:opacity-80 transition"
+              className="h-auto cursor-pointer hover:opacity-80 transition"
               onClick={() => router.push("/")}
             />
+            {/* 4. 데스크탑 전용 접기 버튼 */}
+            {!isMobile && (
+              <div
+                role="button"
+                onClick={toggleSidebar}
+                className="h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-800 opacity-0 group-hover/sidebar:opacity-100 transition cursor-pointer"
+              >
+                <ChevronsLeft className="h-6 w-6" />
+              </div>
+            )}
+            {/* 5. 모바일 전용 큰 닫기 버튼 (X 아이콘) */}
+            {isMobile && (
+              <div
+                onClick={toggleSidebar}
+                role="button"
+                className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-neutral-800 transition text-white absolute top-4 right-4"
+              >
+                <X className="h-8 w-8" />
+              </div>
+            )}
           </div>
-          <div
-            role="button"
-            className="h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-800 absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition"
-            onClick={toggleSidebar}
-          >
-            <ChevronsLeft className="h-6 w-6" />
-          </div>
-          <div>
+
+          {/* 터치 영역 최적화를 위해 모바일일 때 간격 조절 */}
+          <div className={cn(isMobile && "px-2 space-y-2")}>
             <UserItem />
-            <Item label="초대" icon={UserPlus} onClick={invite.onOpen} />
+            <Item
+              label="초대"
+              icon={UserPlus}
+              onClick={() => handleAction(invite.onOpen)}
+            />
             {invite.isOpen && <InviteModal workspaceId={safeWorkspaceId} />}
-            <Item label="검색" icon={Search} isSearch onClick={search.onOpen} />
-            <Item label="설정" icon={Settings} onClick={settings.onOpen} />
+            <Item
+              label="검색"
+              icon={Search}
+              isSearch
+              onClick={() => handleAction(search.onOpen)}
+            />
+            <Item
+              label="설정"
+              icon={Settings}
+              onClick={() => handleAction(settings.onOpen)}
+            />
             <Item onClick={handleCreate} label="새 페이지" icon={PlusCircle} />
           </div>
-          <div className="mt-4 text-white">
-            <DocumentList />
+
+          <div className={cn("mt-4 text-white", isMobile && "px-2 space-y-2")}>
+            <DocumentList onItemClick={() => isMobile && toggleSidebar()} />
             <Item onClick={handleCreate} label="페이지 추가" icon={Plus} />
-            <Item icon={User} label="친구" onClick={onRedirectFriends} />
+            <Item
+              icon={User}
+              label="친구"
+              onClick={() => handleAction(onRedirectFriends)}
+            />
             <Popover>
               <PopoverTrigger className="w-full mt-4">
                 <Item label="휴지통" icon={Trash} />
@@ -184,18 +241,24 @@ export const Navigation = () => {
               </PopoverContent>
             </Popover>
           </div>
-          <div
-            onMouseDown={handleMouseDown}
-            className="cursor-ew-resize absolute h-full w-1 hover:bg-primary right-0 top-0"
-          />
+
+          {/* 데스크탑 리사이즈 핸들 (모바일은 숨김) */}
+          {!isMobile && (
+            <div
+              onMouseDown={handleMouseDown}
+              className="cursor-ew-resize absolute h-full w-1 hover:bg-primary right-0 top-0 opacity-0 group-hover/sidebar:opacity-100 transition"
+            />
+          )}
         </div>
       </aside>
+
       <div
         ref={navbarRef}
         className={cn(
           "absolute top-0 z-[9998] pointer-events-none",
           isResetting && "transition-all ease-in-out duration-300",
-          isCollapsed ? "left-0 w-full" : "left-60 w-[calc(100%-240px)]"
+          // 모바일일 때 사이드바가 열리면 내비바를 완전히 숨기거나 왼쪽으로 밀어줌
+          isCollapsed ? "left-0 w-full" : isMobile ? "left-0 w-0 opacity-0" : "left-60 w-[calc(100%-240px)]"
         )}
       >
         {!!params.documentId ? (
@@ -205,7 +268,7 @@ export const Navigation = () => {
             {isCollapsed && (
               <MenuIcon
                 role="button"
-                className="h-6 w-6 text-muted-foreground pointer-events-auto"
+                className="h-6 w-6 text-muted-foreground pointer-events-auto cursor-pointer hover:text-white transition"
                 onClick={toggleSidebar}
               />
             )}

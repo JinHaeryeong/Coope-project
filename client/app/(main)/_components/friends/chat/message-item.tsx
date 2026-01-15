@@ -10,19 +10,20 @@ interface MessageItemProps {
     friendInfo: { name?: string; icon?: string };
     convexSiteUrl?: string;
 }
+const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
 
 export const MessageItem = ({
     message,
     isMine,
     isSameSender,
-    friendInfo,
-    convexSiteUrl
+    friendInfo
 }: MessageItemProps) => {
     const formattedTime = new Intl.DateTimeFormat("ko-KR", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
     }).format(new Date(message._creationTime));
+
 
     return (
         <article className={isMine ? "message-mine shadow-lg w-fit ml-auto rounded-lg my-3" : "shadow-lg w-fit rounded-lg my-3"}>

@@ -56,9 +56,9 @@ export const Navbar = () => {
                             ))}
                             {isLoading && <Spinner />}
                             {!isAuthenticated && !isLoading && (
-                                <li className="relative group text-sm font-medium">
+                                <li className="relative group font-medium">
                                     <SignInButton mode="modal">
-                                        <button>로그인</button>
+                                        로그인
                                     </SignInButton>
                                     <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black dark:bg-white"></span>
                                 </li>

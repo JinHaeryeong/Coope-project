@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { GenericId } from "convex/values";
 import { SetStateAction, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
+import { formatDate } from "@/lib/utils";
 export const CommentList = ({ notice }: { notice: string }) => {
     const comments = useQuery(api.comments.listComments, { id: notice });
     const [commentEdit, setCommentEdit] = useState(""); //댓글 수정 내용을 담아둠
@@ -79,14 +80,8 @@ export const CommentList = ({ notice }: { notice: string }) => {
                                     <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                                         <div className="font-bold text-sm md:text-base">{comment.author}</div>
                                         <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
-                                        <div className="text-[10px] md:text-sm text-slate-500 font-light dark:text-slate-400">
-                                            {new Intl.DateTimeFormat('ko-KR', {
-                                                year: '2-digit',
-                                                month: '2-digit',
-                                                day: '2-digit',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            }).format(new Date(comment._creationTime))}
+                                        <div className="text-[10px] md:text-sm text-slate-500 font-light">
+                                            {formatDate(comment._creationTime)}
                                         </div>
                                     </div>
 
