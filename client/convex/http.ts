@@ -51,8 +51,8 @@ http.route({
     const fileName = new URL(request.url).searchParams.get("fileName");
     const roomId = new URL(request.url).searchParams.get("roomId");
     const format = new URL(request.url).searchParams.get("format");
-    const text = new URL(request.url).searchParams.get("text");
-    if (!author || !fileName || !roomId || !format || !text) {
+    const text = new URL(request.url).searchParams.get("text") || "";
+    if (!author || !fileName || !roomId || !format) {
       //필요한 파라미터가 없을 경우 에러 응답 반환
       return new Response("요구된 파라미터가 없습니다.", {
         status: 400,

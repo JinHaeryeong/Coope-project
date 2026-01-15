@@ -86,6 +86,7 @@ export const Navigation = () => {
     }
   }, [isMobile]);
 
+
   if (isWorkspacePath && !workspaceId) {
     return null;
   }
@@ -221,7 +222,7 @@ export const Navigation = () => {
           </div>
 
           <div className={cn("mt-4 text-white", isMobile && "px-2 space-y-2")}>
-            <DocumentList />
+            <DocumentList onItemClick={() => isMobile && toggleSidebar()} />
             <Item onClick={handleCreate} label="페이지 추가" icon={Plus} />
             <Item
               icon={User}

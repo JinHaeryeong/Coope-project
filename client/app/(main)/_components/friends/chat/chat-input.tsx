@@ -39,8 +39,18 @@ const ChatInput = ({
         // p-2를 추가해 여백을 주고, border-t로 경계선을 만들면 더 깔끔하게 하기
         <div className="w-full bottom-0 bg-white dark:bg-[#1F1F1F] p-1 md:p-4 border-t">
             {selectedFile && (
-                <div className="text-xs opacity-60 mb-2 flex items-center gap-2">
-                    {selectedFile.name} <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedFile(null)} />
+                <div className="mb-2 flex items-center gap-2 p-2 bg-slate-100 dark:bg-slate-800 rounded-md w-fit">
+                    {selectedFile.type.startsWith("image/") && (
+                        <div className="relative h-10 w-10">
+                            <img
+                                src={URL.createObjectURL(selectedFile)}
+                                alt="preview"
+                                className="object-cover rounded-sm h-full w-full"
+                            />
+                        </div>
+                    )}
+                    <span className="text-xs font-medium">{selectedFile.name}</span>
+                    <X className="h-4 w-4 cursor-pointer text-red-500" onClick={() => setSelectedFile(null)} />
                 </div>
             )}
 
@@ -51,7 +61,10 @@ const ChatInput = ({
                     ref={fileInputRef}
                     className="hidden"
                     accept="image/*,.hwp,.pdf,.docx,.ppt,.pptx"
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setSelectedFile(file);
+                    }}
                 />
 
                 {/* 플러스 버튼 */}
