@@ -26,6 +26,9 @@ importers:
       '@clerk/nextjs':
         specifier: ^6.19.4
         version: 6.36.7(next@15.2.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@clerk/types':
+        specifier: ^4.101.10
+        version: 4.101.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@edgestore/react':
         specifier: ^0.3.3
         version: 0.3.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@3.25.76)

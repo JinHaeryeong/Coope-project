@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { sleep, check } from "k6";
+import { check } from "k6";
 
 // 1. 테스트 설정
 export const options = {
