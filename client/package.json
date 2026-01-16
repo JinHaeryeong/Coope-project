@@ -36,6 +36,7 @@
         "cmdk": "^1.0.4",
         "convex": "^1.23.0",
         "emoji-picker-react": "^4.12.2",
+        "lodash": "^4.17.21",
         "lucide-react": "^0.473.0",
         "mediasoup-client": "^3.18.3",
         "nanoid": "^5.1.5",
@@ -69,6 +70,7 @@
         "zustand": "^5.0.3"
     },
     "devDependencies": {
+        "@types/lodash": "^4.17.23",
         "@types/node": "^20",
         "@types/nodemailer": "^6.4.17",
         "@types/react": "19.0.12",

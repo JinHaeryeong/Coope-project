@@ -93,7 +93,7 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
   }, [processing, recording]);
 
   return (
-    <div className={`relative w-full h-full rounded-md md:rounded-2xl overflow-hidden bg-neutral-950 flex flex-col items-center justify-center transition-all duration-500 ${isEmptyMain && !isFullScreen ? "aspect-video min-h-[400px]" : "h-full"
+    <div className={`relative w-full h-full rounded-md md:rounded-2xl overflow-hidden bg-neutral-950 flex flex-col items-center justify-center transition-all duration-500 ${isEmptyMain && !isFullScreen ? "aspect-video min-h-[400px]" : ""
       } border border-white/5 shadow-2xl`}>
 
       {/* 메인 뷰 영역 */}

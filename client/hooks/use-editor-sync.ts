@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { BlockNoteEditor } from "@blocknote/core";
+import { debounce } from "lodash";
 
-// 훅이 받을 인자들의 타입을 정의
 interface UseEditorSyncProps {
     editor: BlockNoteEditor;
     initialContent?: string;
@@ -14,37 +14,48 @@ export const useEditorSync = ({
     onChange,
 }: UseEditorSyncProps) => {
     const isSelfUpdating = useRef(false);
+    const lastPushedContent = useRef(initialContent); // 내가 마지막으로 서버에 보낸 내용 기록
 
+    // 1. 서버 -> 에디터 동기화
     useEffect(() => {
-        // 서버 데이터가 있고, 현재 에디터 내용과 다를 때만 실행
         if (!initialContent) return;
+
         try {
+            // 내가 방금 서버에 보낸 내용과 똑같다면 업데이트 건너뜀
+            if (initialContent === lastPushedContent.current) return;
+
             const serverData = JSON.parse(initialContent);
-            const currentData = editor.document;
+            const currentData = JSON.stringify(editor.document);
 
-            if (JSON.stringify(currentData) !== initialContent) {
-                isSelfUpdating.current = true; // 플래그 ON
-
-                // 에디터 내용 교체
+            if (currentData !== initialContent) {
+                isSelfUpdating.current = true;
                 editor.replaceBlocks(editor.document, serverData);
 
-                // 렌더링 주기를 고려해 플래그 OFF
+                // 브라우저 렌더링 직후 바로 해제
                 setTimeout(() => {
                     isSelfUpdating.current = false;
-                }, 500);
+                }, 10);
             }
         } catch (error) {
             console.error("에디터 컨텐츠 파싱 실패:", error);
         }
     }, [initialContent, editor]);
 
+    // 에디터 -> 서버 (디바운스 적용)
+    // 500ms 동안 타이핑이 멈추면 그때 한 번만 서버로 전송
+    const debouncedOnChange = useCallback(
+        debounce((content: string) => {
+            lastPushedContent.current = content; // 내가 보낸 내용을 기록
+            onChange(content);
+        }, 500),
+        [onChange]
+    );
+
     const handleEditorChange = () => {
-        // 무한 루프 방지: 내가 수정 중일 때는 부모의 onChange를 부르지 않음
         if (!isSelfUpdating.current) {
             const newContent = JSON.stringify(editor.document);
-
-            if (newContent !== initialContent) {
-                onChange(newContent);
+            if (newContent !== lastPushedContent.current) {
+                debouncedOnChange(newContent);
             }
         }
     };
