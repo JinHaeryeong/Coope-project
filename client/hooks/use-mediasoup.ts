@@ -224,7 +224,24 @@ export const useMediasoup = (
             setStreams(prev => ({ ...prev, [type]: stream }));
             if (type === "camera") setCamEnabled(true);
 
-            videoTrack.onended = () => stopMedia(type);
+            // onended 안에서 '방금 만든' producer를 직접 사용하게 함
+            // 이렇게 해야 클로저 문제 없이 서버에 '나 꺼졌어!'라고 알릴 수 있음
+            videoTrack.onended = () => {
+                console.log(`📡 브라우저 버튼으로 ${type} 종료됨`);
+
+                // 서버에 신호 보내기
+                socketRef.current?.emit("close-producer", producer.id);
+                producer.close();
+
+                // 로컬 상태 정리
+                setStreams(prev => ({ ...prev, [type]: null }));
+                setMyProducers(prev => {
+                    const newP = { ...prev };
+                    delete newP[type];
+                    return newP;
+                });
+                if (type === "camera") setCamEnabled(false);
+            };
         } catch (error) {
             console.error(`${type} 시작 실패:`, error);
         }
