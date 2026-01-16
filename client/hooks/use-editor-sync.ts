@@ -16,6 +16,11 @@ export const useEditorSync = ({
     const isSelfUpdating = useRef(false);
     const lastPushedContent = useRef(initialContent);
 
+    // 코파일럿 지적 반영: 문서(initialContent)가 바뀌면 기준점도 업데이트
+    useEffect(() => {
+        lastPushedContent.current = initialContent;
+    }, [initialContent]);
+
     // (수정) debounce 함수를 useMemo로 감싸고, cleanup 로직 추가
     const debouncedOnChange = useMemo(
         () => debounce((content: string) => {
@@ -35,6 +40,7 @@ export const useEditorSync = ({
     useEffect(() => {
         if (!initialContent) return;
         try {
+            // 내가 방금 보낸 내용과 서버 내용이 같으면 중복 업데이트 금지
             if (initialContent === lastPushedContent.current) return;
 
             const serverData = JSON.parse(initialContent);
