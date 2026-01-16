@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { BlockNoteEditor } from "@blocknote/core";
 import { debounce } from "lodash";
 
@@ -14,14 +14,27 @@ export const useEditorSync = ({
     onChange,
 }: UseEditorSyncProps) => {
     const isSelfUpdating = useRef(false);
-    const lastPushedContent = useRef(initialContent); // 내가 마지막으로 서버에 보낸 내용 기록
+    const lastPushedContent = useRef(initialContent);
 
-    // 1. 서버 -> 에디터 동기화
+    // (수정) debounce 함수를 useMemo로 감싸고, cleanup 로직 추가
+    const debouncedOnChange = useMemo(
+        () => debounce((content: string) => {
+            lastPushedContent.current = content;
+            onChange(content);
+        }, 500),
+        [onChange]
+    );
+
+    // (추가) 컴포넌트가 사라질 때 남아있는 디바운스 취소 (메모리 누수 방지)
+    useEffect(() => {
+        return () => {
+            debouncedOnChange.cancel();
+        };
+    }, [debouncedOnChange]);
+
     useEffect(() => {
         if (!initialContent) return;
-
         try {
-            // 내가 방금 서버에 보낸 내용과 똑같다면 업데이트 건너뜀
             if (initialContent === lastPushedContent.current) return;
 
             const serverData = JSON.parse(initialContent);
@@ -31,25 +44,15 @@ export const useEditorSync = ({
                 isSelfUpdating.current = true;
                 editor.replaceBlocks(editor.document, serverData);
 
-                // 브라우저 렌더링 직후 바로 해제
-                setTimeout(() => {
+                // (수정) setTimeout 대신 브라우저 렌더링 프레임에 맞춤
+                requestAnimationFrame(() => {
                     isSelfUpdating.current = false;
-                }, 10);
+                });
             }
         } catch (error) {
             console.error("에디터 컨텐츠 파싱 실패:", error);
         }
     }, [initialContent, editor]);
-
-    // 에디터 -> 서버 (디바운스 적용)
-    // 500ms 동안 타이핑이 멈추면 그때 한 번만 서버로 전송
-    const debouncedOnChange = useCallback(
-        debounce((content: string) => {
-            lastPushedContent.current = content; // 내가 보낸 내용을 기록
-            onChange(content);
-        }, 500),
-        [onChange]
-    );
 
     const handleEditorChange = () => {
         if (!isSelfUpdating.current) {
