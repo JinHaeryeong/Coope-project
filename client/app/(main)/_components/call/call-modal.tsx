@@ -28,18 +28,20 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
       >
         <div
           className={`
-            relative transition-all duration-300 border bg-white dark:bg-neutral-900 shadow-2xl
+            relative transition-all duration-300 border bg-white dark:bg-neutral-900 shadow-2xl flex flex-col
             ${isFullScreen
               ? "w-screen h-screen rounded-none" // 전체 화면 모드
-              : "w-full md:w-8/12 lg:w-5/12 h-auto rounded-sm md:rounded-2xl p-6" // 기본 모달 모드
+              : "w-full md:w-8/12 lg:w-5/12 h-[85vh] max-h-[850px] rounded-sm md:rounded-2xl p-6" // 기본 모달 모드
             }
           `}
         >
-          {!isFullScreen && <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">통화</h2>
-          </div>}
+          {!isFullScreen && (
+            <div className="flex justify-between items-center mb-4 shrink-0">
+              <h2 className="text-xl font-bold">통화</h2>
+            </div>
+          )}
 
-          <div className={`${isFullScreen ? "h-[calc(100%-80px)]" : "h-auto"}`}>
+          <div className="flex-1 min-h-0 w-full relative">
             <WebRTCComponent
               roomId={roomId}
               isFullScreen={isFullScreen}

@@ -93,17 +93,17 @@ export default function WebRtcComponent({ roomId, isFullScreen }: { roomId: stri
   }, [processing, recording]);
 
   return (
-    <div className={`relative w-full rounded-md md:rounded-2xl overflow-hidden bg-neutral-950 flex flex-col items-center justify-center transition-all duration-500 ${isEmptyMain && !isFullScreen ? "aspect-video min-h-[400px]" : "h-full"
+    <div className={`relative w-full h-full rounded-md md:rounded-2xl overflow-hidden bg-neutral-950 flex flex-col items-center justify-center transition-all duration-500 ${isEmptyMain && !isFullScreen ? "aspect-video min-h-[400px]" : "h-full"
       } border border-white/5 shadow-2xl`}>
 
       {/* 메인 뷰 영역 */}
-      <div className="flex-1 min-h-0 w-full bg-black relative flex items-center justify-center">
+      <div className="flex-1 min-h-0 w-full bg-black relative flex items-center justify-center overflow-hidden">
         {mainStream ? (
-          <div className="w-full h-full relative group">
+          <div className="w-full h-full relative group justify-center items-center flex">
             {"producerId" in mainStream ? (
-              <RemoteVideo info={mainStream as RemoteStreamInfo} className="w-full h-full object-contain" />
+              <RemoteVideo info={mainStream as RemoteStreamInfo} className="max-w-full max-h-full w-auto h-auto object-contain" />
             ) : (
-              <LocalVideo stream={currentMyStream} className="w-full h-full object-contain" />
+              <LocalVideo stream={currentMyStream} className="max-w-full max-h-full w-auto h-auto object-contain" />
             )}
 
             {pinnedProducerId && (
