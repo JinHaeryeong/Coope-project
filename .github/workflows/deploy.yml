@@ -23,4 +23,4 @@ jobs:
                       cd ~/Coope-project/server             # 서버 폴더로 이동
                       git pull origin main                  # 최신 코드 땡겨오기
                       pnpm install                          # 라이브러리 설치
-                      pm2 restart coope-server              # 서버 재시작
+                      /home/ubuntu/.local/share/pnpm/pm2 restart coope-server              # 서버 재시작
