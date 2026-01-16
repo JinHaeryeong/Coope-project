@@ -1,0 +1,26 @@
+name: Deploy to AWS
+
+on:
+    push:
+        branches:
+            - main # main 브랜치에 push될 때 실행
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Execute remote ssh commands
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.REMOTE_IP }} # AWS 탄력적 IP
+                  username: ubuntu # 보통 ubuntu
+                  key: ${{ secrets.REMOTE_SSH_KEY }} # .pem 키 파일의 텍스트 내용
+                  port: 22
+                  script: |
+                      cd ~/Coope-project/server             # 서버 폴더로 이동
+                      git pull origin main                  # 최신 코드 땡겨오기
+                      pnpm install                          # 라이브러리 설치
+                      pm2 restart coope-server              # 서버 재시작
