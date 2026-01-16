@@ -4,7 +4,7 @@ import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
 
-import useMoveScroll from '@/hooks/useMoveScroll';
+import useMoveScroll from '@/hooks/use-move-scroll';
 import { Button } from '@/components/ui/button';
 import ScrollToTop from '@/app/(marketing)/_components/scroll-to-top';
 const functionPage = () => {
