@@ -22,12 +22,12 @@ export const createRoomRouter = async () => {
 
 export const createWebRtcTransport = async (router: mediasoupTypes.Router) => {
     const transport = await router.createWebRtcTransport({
-        // listenIps: [{
-        //     ip: "0.0.0.0",
-        //     announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || "127.0.0.1",
-        // },],
-        listenIps: [
-            { ip: "127.0.0.1" }],
+        listenIps: [{
+            ip: "0.0.0.0",
+            announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || "127.0.0.1",
+        },],
+        // listenIps: [
+        //     { ip: "127.0.0.1" }],
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,
