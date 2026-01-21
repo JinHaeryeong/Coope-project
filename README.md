@@ -336,44 +336,6 @@
 
 https://github.com/user-attachments/assets/2b8858a5-de5b-4666-a360-e46cec4e104b
 
-
-|  이름  | 결과  |
-|---|---|
-|  메인페이지 |   ![main](https://github.com/user-attachments/assets/aa734e14-7b86-43a8-afed-5d0013b96ddd)|
-| 공지사항  |  ![notice](https://github.com/user-attachments/assets/75b5b025-86d1-427c-be09-5228931a04c1)|
-| 회사소개  |   ![introduce](https://github.com/user-attachments/assets/db9083a9-5029-451d-a388-1ac75a28423d)|
-| 고객지원  |   ![inquiries](https://github.com/user-attachments/assets/cae4b53d-93be-409c-a42c-43fc413b6213)|
-|  AI 채팅  |   ![aiChat](https://github.com/user-attachments/assets/9ce0ca4a-a948-4832-8934-6509d8b5dc1a)|
-| 문서 동시 편집  |  (데스크탑, 유저1) ![share](https://github.com/user-attachments/assets/1ba15e7c-2ab7-42e7-b244-36898db06c46)(모바일, 유저2)<br/> ![share_mobile](https://github.com/user-attachments/assets/b6d74402-7acf-48e8-be6b-7987735e4f42)|
-|  채팅  | (데스크탑, 유저1) ![chat](https://github.com/user-attachments/assets/e41f96a4-5eab-4bdf-a0ea-6a1a3354a010)(모바일, 유저2)<br/> ![chat_mobile](https://github.com/user-attachments/assets/7665b4bb-9295-401e-9fb8-9598cb9918dd)|
-|  통화  |  (데스크탑, 유저1) ![webrtc](https://github.com/user-attachments/assets/9cb4fa65-4da6-483e-8a14-31a3e1fefe10)(모바일, 유저2)<br/> ![webrtc_mobile](https://github.com/user-attachments/assets/9781c9e9-0803-4c4a-b80a-e0569b60d4a2)<br/>데스크탑 버전이 먼저 공유 => 몇 초 후 모바일이 들어옴이라서 둘 사이에 딜레이가 있어보이는 점 양해부탁드립니다|
-|  STT   |![stt](https://github.com/user-attachments/assets/a8857a28-16ca-4fef-89b5-ef5ba8363ca3) 읽은 문장은 친절한 SQL 튜닝 21p를 읽었습니다 길게 읽어서 GIF가 길고, 중간에 기록 중지가 빨간색으로 바뀔 때가 있는데 아직 읽고있을 때입니다 │
-
----
-## 실행 방법
-### 1. 사전 작업
-- Clerk, Convex, EdgeStore 회원가입 필요, OPENAI의 API Key 필요
-- Clerk, Convex 공식문서 참고 => Clerk <=> Convex 사이에 유저 정보 삽입, 수정, 삭제 시 User 테이블이 반영되도록 WebHook 설정 필요
-- 환경변수 설정 필요 => .env.example 파일 참고
-
-### 2. 필요한 패키지 설치
-#### 터미널 창 2개 필요
-
-> 터미널 1(Front)
-- cd client
-- pnpm install
-> 터미널 2(Back)
-- cd server
-- pnpm install
-
-
-### 3. 실행
-#### 터미널 창 3개 필요
-- 터미널 1 (Convex): npx convex dev(처음 할때만 필요 이후엔 클라우드 기반이라 필요 X)
-- 터미널 2, 터미널 3 (Front, Back): pnpm dev
----
-
-## 🧪예시 결과
 |  이름  | 결과  |
 |---|---|
 |  메인페이지 |   ![main](https://github.com/user-attachments/assets/aa734e14-7b86-43a8-afed-5d0013b96ddd)|
