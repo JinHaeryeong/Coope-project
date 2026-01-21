@@ -333,6 +333,10 @@
 ---
 
 ## 🧪예시 결과
+
+https://github.com/user-attachments/assets/2b8858a5-de5b-4666-a360-e46cec4e104b
+
+
 |  이름  | 결과  |
 |---|---|
 |  메인페이지 |   ![main](https://github.com/user-attachments/assets/aa734e14-7b86-43a8-afed-5d0013b96ddd)|
